@@ -95,6 +95,17 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [ ] Implement tools as MCP servers
 - [ ] RAG evaluation (RAGAs or equivalent)
 
+## Cross-project reviewer lessons (from Sprint 1)
+
+- [ ] Prompt-injection defense added (treat user input as untrusted; delimit user text blocks; optionally use moderation)
+- [ ] OpenAI/LangChain calls use timeout + retry settings; timeout returns user-friendly error
+- [ ] Prompt-iteration evidence documented (comparison notes and rationale in docs)
+- [ ] Unit tests added for validation and prompt/retrieval helpers
+- [ ] At least one API integration test added with mocked model client
+- [ ] Domain research documented in README or dedicated doc (niche choice, alternatives, target user need)
+- [ ] Structured logging/observability added (latency, model/tool usage, token/cost metadata)
+- [ ] Conversation context management added (sliding window and/or summarization to control token cost)
+
 ## Review readiness
 
 - [ ] README updated with implemented `✅` items and evidence paths
