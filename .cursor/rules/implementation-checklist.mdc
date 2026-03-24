@@ -1,0 +1,103 @@
+---
+description: Implementation checklist for the Sprint 2 domain-focused chatbot (125.md)
+alwaysApply: true
+---
+
+# Implementation checklist (125.md)
+
+Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick items as done.
+
+**Focus:** Domain-focused chatbot with advanced RAG + tool calling using Next.js and LangChain.
+
+## Setup
+
+- [x] Node on LTS (if needed)
+- [x] pnpm installed; use it for this project
+- [x] Next.js app created in current project folder
+- [ ] Required dependencies installed (LangChain, OpenAI SDK, validation libs, vector DB libs)
+- [ ] OpenAI API key obtained and stored securely (`.env.local`, never in code)
+
+## Domain definition
+
+- [ ] Domain/use case selected and documented (clear scope)
+- [ ] Knowledge sources selected and added to `data/`
+- [ ] Domain-specific system prompt and safety guardrails defined
+
+## Core requirements (125.md)
+
+### 1) RAG implementation
+
+- [ ] Knowledge base ingestion pipeline implemented
+- [ ] Chunking strategy configured and documented
+- [ ] Embeddings-based retrieval implemented
+- [ ] Similarity search working with relevant top-k retrieval
+- [ ] Query translation/rewriting step implemented for better retrieval
+- [ ] Response includes source context/citations where possible
+
+### 2) Tool calling
+
+- [ ] At least 3 domain-relevant tools implemented
+- [ ] Tool input schemas validated (e.g. `zod`)
+- [ ] Tool-call errors handled gracefully
+- [ ] Tool results rendered clearly in the UI
+
+### 3) Domain specialization
+
+- [ ] Chatbot behavior is clearly specialized to chosen domain
+- [ ] Domain-focused knowledge base integrated into responses
+- [ ] Domain-specific safety/security considerations applied
+
+### 4) Technical implementation
+
+- [ ] LangChain integration implemented for model + retrieval workflow
+- [ ] API route validation and sanitization implemented
+- [ ] Proper error handling added (typed, safe responses)
+- [ ] Logging/monitoring added (without leaking secrets)
+- [ ] Rate limiting added for chat endpoint
+- [ ] API key management follows secure env-var practices
+
+### 5) User interface
+
+- [ ] Intuitive chat interface implemented in Next.js
+- [ ] Sources/citations displayed in responses
+- [ ] Tool-call outputs displayed in dedicated UI area
+- [ ] Progress/loading indicators shown for long operations
+
+## Optional tasks (125.md)
+
+### Easy
+
+- [ ] Conversation history + export
+- [ ] RAG process visualization
+- [ ] Source citations in responses (if not already covered)
+- [ ] Interactive help/chatbot guide
+
+### Medium
+
+- [ ] Multi-model support (OpenAI, Anthropic, etc.)
+- [ ] Real-time knowledge-base updates
+- [ ] Advanced caching strategy
+- [ ] Authentication + personalization
+- [ ] Token usage and cost display
+- [ ] Tool-call result visualization improvements
+- [ ] Conversation export in PDF/CSV/JSON
+- [ ] Connect to public remote MCP tools
+
+### Hard
+
+- [ ] Cloud deployment with scaling considerations
+- [ ] Advanced indexing (e.g. RAPTOR, ColBERT)
+- [ ] A/B testing for RAG strategies
+- [ ] Automated knowledge-base updates
+- [ ] Model fine-tuning for domain
+- [ ] Multi-language support
+- [ ] Advanced analytics dashboard
+- [ ] Implement tools as MCP servers
+- [ ] RAG evaluation (RAGAs or equivalent)
+
+## Review readiness
+
+- [ ] README updated with implemented `✅` items and evidence paths
+- [ ] Lint passes
+- [ ] Build passes
+- [ ] App runs locally and key flows are manually tested

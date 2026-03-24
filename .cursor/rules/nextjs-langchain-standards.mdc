@@ -1,0 +1,73 @@
+---
+description: Project conventions for Next.js 16 + React 19 + LangChain chatbot implementation
+alwaysApply: true
+---
+
+# Next.js + LangChain Project Standards
+
+## 1. STACK AND VERSION ALIGNMENT
+
+- Follow patterns compatible with this project stack:
+  - Next.js 16 (App Router)
+  - React 19
+  - TypeScript 5
+  - ESLint 9
+- Do not introduce APIs or patterns removed/deprecated for these versions.
+
+## 2. ARCHITECTURE RULES
+
+- Use App Router structure under `src/app`.
+- Keep server-side LLM and retrieval logic in API routes or server modules only.
+- Never expose API secrets or provider keys to client components.
+- Keep UI components focused on rendering and interaction; move business logic to `src/lib`.
+
+## 3. RECOMMENDED FOLDER STRUCTURE
+
+- `src/app/api/chat/route.ts` for chat request handling.
+- `src/lib/llm/` for model configuration and wrappers.
+- `src/lib/rag/` for document loading, chunking, embeddings, and retrieval.
+- `src/lib/tools/` for tool definitions and schemas.
+- `src/types/` for shared TypeScript types when needed.
+- `data/` for local knowledge-base files used by RAG.
+
+## 4. RAG IMPLEMENTATION STANDARDS
+
+- Use typed document processing and retrieval pipelines.
+- Keep chunking configuration explicit and centralized.
+- Return source metadata with answers when possible.
+- Add input validation and graceful error handling for retrieval failures.
+- Log retrieval and tool-call steps in a privacy-safe way (no secret leakage).
+
+## 5. TOOL CALLING STANDARDS
+
+- Implement at least 3 domain-relevant tools.
+- Validate tool inputs with a schema library (for example `zod`).
+- Keep each tool in a separate module with a clear single responsibility.
+- Ensure tool execution errors return safe, user-friendly messages.
+
+## 6. API ROUTE STANDARDS
+
+- Validate and sanitize incoming request payloads.
+- Return typed JSON responses with clear error shapes.
+- Use proper HTTP status codes for validation, rate-limit, and server errors.
+- Keep route handlers small; delegate logic to `src/lib`.
+
+## 7. SECURITY AND CONFIGURATION
+
+- Read secrets from `.env.local` only on the server.
+- Never hardcode API keys, tokens, or private endpoints.
+- Add basic rate limiting and input length controls for chat endpoints.
+- Avoid logging full user-sensitive content unless explicitly required.
+
+## 8. UI/UX REQUIREMENTS FOR THIS PROJECT
+
+- Show response loading/progress states.
+- Display source context and citations when available.
+- Display tool-call results in a clear, separate section.
+- Keep UI responsive and accessible (labels, keyboard focus, semantic elements).
+
+## 9. CHANGE DISCIPLINE
+
+- Make minimal, task-focused changes only.
+- Do not refactor unrelated code unless required for correctness.
+- Before finishing work, run lint/type checks and fix newly introduced issues.
