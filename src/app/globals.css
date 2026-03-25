@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-inter);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +22,61 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+/* Project-specific font helpers to match the design example. */
+.font-body {
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+.font-headline {
+  font-family: var(--font-manrope), Arial, Helvetica, sans-serif;
+}
+
+.font-label {
+  font-family: var(--font-space-grotesk), Arial, Helvetica, sans-serif;
+}
+
+.font-inter {
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Material Symbols Outlined (design-example dependency). */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  line-height: 1;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* Scrollbar styling similar to the design example. */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f1f22;
+  border-radius: 10px;
+}
+
+/* Token-like text colors used by the design templates. */
+.text-on-surface {
+  color: #e7e5e8;
+}
+
+.text-on-surface-variant {
+  color: #acaaae;
+}
+
+.text-outline {
+  color: #767578;
 }
