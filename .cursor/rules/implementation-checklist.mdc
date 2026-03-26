@@ -19,8 +19,8 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 ## Domain definition
 
-- [ ] Domain/use case selected and documented (clear scope)
-- [ ] Knowledge sources selected and added to `data/`
+- [x] Domain/use case selected and documented (clear scope)
+- [x] Knowledge sources selected and added to `data/` (hair-salon KB placeholders + extracted pricing)
 - [ ] Domain-specific system prompt and safety guardrails defined
 
 ## Core requirements (125.md)
@@ -59,9 +59,9 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 ### 5) User interface
 
 - [x] Intuitive chat interface implemented in Next.js (UI skeleton + responsive layout)
-- [ ] Sources/citations displayed in responses (mocked UI blocks, TODO wired to backend later)
-- [ ] Tool-call outputs displayed in dedicated UI area (mocked UI blocks, TODO wired to backend later)
-- [ ] Progress/loading indicators shown for long operations (mocked UI states for long operations)
+- [x] Sources/citations displayed in responses (mocked UI blocks, TODO wired to backend later)
+- [x] Tool-call outputs displayed in dedicated UI area (mocked UI blocks, TODO wired to backend later)
+- [x] Progress/loading indicators shown for long operations (mocked UI states for long operations)
 
 ## Optional tasks (125.md)
 

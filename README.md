@@ -9,6 +9,38 @@ The goal is to provide context-aware, domain-specific answers with practical too
 
 ## For reviewers
 
+### Chosen Domain / Use Case (Hair Salon - chatbot)
+
+This project's domain is a hair salon assistant that helps users with:
+
+- Service questions (what's included, typical duration, what to expect)
+- Pricing questions (prices and how final price can depend on hair length/density)
+- Appointment planning (checking availability and booking an appointment)
+- Hairstyle recommendations (based on hair type and desired outcome)
+- Aftercare / hair care guidance and basic DUK (common "how long / how to prepare" questions)
+
+**Intended tool calling (domain-relevant, planned for the next implementation step):**
+
+- `check_availability`: returns available time slots for a requested service window
+- `calculate_price`: calculates price breakdown based on chosen services and hair parameters
+- `book_appointment`: confirms a reservation for a chosen time slot
+- `get_hairstyle_recommendations` (optional): recommends hairstyles using hair-type guidance from the knowledge base
+
+**Knowledge sources used for RAG (current placeholders / content in `data/`):**
+
+- `data/hair-salon/services/services.md`
+- `data/hair-salon/pricing/pricing.md`
+- `data/hair-salon/faq/faq.md`
+- `data/hair-salon/care/hair-care.md`
+- `data/hair-salon/hair-types/hair-types.md`
+- `data/hair-salon/policies/booking-policy.md`
+
+**Scope / current status:**
+
+- Implemented: UI frame + route wiring (`/`, `/chat`, `/history`, `/config`) and placeholder chat content.
+- In place: initial domain knowledge-base markdown files under `data/hair-salon/` (including `pricing.md`).
+- Pending: LangChain/RAG retrieval workflow, tool execution endpoints, and rendering real citations/tool results in the UI.
+
 ### Task requirements
 
 ❗ - 1. **RAG Implementation**: Create a domain knowledge base and implement retrieval with embeddings.
@@ -31,6 +63,7 @@ The goal is to provide context-aware, domain-specific answers with practical too
 
 - Define domain prompt strategy and guardrails.
 - Build domain-focused knowledge base in `data/`.
+- Current knowledge-base placeholders are in `data/hair-salon/` (services, pricing, FAQ, hair care, hair types, booking policy).
 
 ❗ - 4. **Technical Implementation**: Use LangChain with error handling, logging, validation, rate limiting, and API key management.
 
