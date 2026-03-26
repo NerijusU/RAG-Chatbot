@@ -11,6 +11,10 @@ export function splitTextIntoChunks(
   chunkSize: number,
   chunkOverlap: number,
 ): string[] {
+  if (chunkOverlap >= chunkSize) {
+    throw new Error("chunkOverlap must be smaller than chunkSize.");
+  }
+
   const normalizedText = text.trim();
   if (!normalizedText) {
     return [];

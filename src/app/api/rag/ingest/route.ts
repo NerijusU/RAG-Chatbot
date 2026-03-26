@@ -5,11 +5,37 @@ import { getRequiredEnv } from "@/lib/env";
 import { ingestKnowledgeBase } from "@/lib/rag/ingest";
 
 const requestSchema = z.object({
-  dataDirectory: z.string().min(1).default("data/hair-salon"),
+  dataDirectory: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200)
+    .regex(
+      /^data(?:[\\/][a-zA-Z0-9_-]+)*$/,
+      "dataDirectory must stay inside the data/ directory.",
+    )
+    .default("data/hair-salon"),
   embeddingModel: z.string().min(1).default("text-embedding-3-small"),
   chunkSize: z.number().int().min(200).max(4000).default(1200),
   chunkOverlap: z.number().int().min(0).max(800).default(200),
   replaceExisting: z.boolean().default(true),
+}).superRefine((value, context) => {
+  const pathParts = value.dataDirectory.split(/[\\/]/);
+  if (pathParts.includes("..") || pathParts.includes(".")) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "dataDirectory cannot contain path traversal segments.",
+      path: ["dataDirectory"],
+    });
+  }
+
+  if (value.chunkOverlap >= value.chunkSize) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "chunkOverlap must be smaller than chunkSize.",
+      path: ["chunkOverlap"],
+    });
+  }
 });
 
 /**
@@ -21,7 +47,7 @@ const requestSchema = z.object({
 function isAuthorizedIngestRequest(request: NextRequest): boolean {
   const configuredSecret = process.env.INGEST_API_KEY;
   if (!configuredSecret || configuredSecret.trim().length === 0) {
-    return process.env.NODE_ENV !== "production";
+    return false;
   }
 
   const authHeader = request.headers.get("authorization");
@@ -41,6 +67,8 @@ function isAuthorizedIngestRequest(request: NextRequest): boolean {
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    getRequiredEnv("INGEST_API_KEY");
+
     if (!isAuthorizedIngestRequest(request)) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized ingest request." },

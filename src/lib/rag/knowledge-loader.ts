@@ -26,6 +26,47 @@ async function getMarkdownFilePaths(rootDirectory: string): Promise<string[]> {
 }
 
 /**
+ * Resolves a user-provided knowledge directory and enforces project-root bounds.
+ *
+ * @param projectRoot - Absolute project root path.
+ * @param directoryFromProjectRoot - Relative input directory from request/options.
+ * @returns Absolute directory path constrained to the current project root.
+ * @throws Error when path is empty, absolute, or escapes project root.
+ */
+function resolveSafeKnowledgeDirectory(
+  projectRoot: string,
+  directoryFromProjectRoot: string,
+): string {
+  const trimmedDirectory = directoryFromProjectRoot.trim();
+  if (!trimmedDirectory) {
+    throw new Error("Knowledge directory must not be empty.");
+  }
+
+  if (path.isAbsolute(trimmedDirectory)) {
+    throw new Error("Knowledge directory must be a project-relative path.");
+  }
+
+  const absoluteRoot = path.resolve(projectRoot, trimmedDirectory);
+  const dataRoot = path.resolve(projectRoot, "data");
+  const relativeToDataRoot = path.relative(dataRoot, absoluteRoot);
+  const relativeToRoot = path.relative(projectRoot, absoluteRoot);
+  const escapesProjectRoot =
+    relativeToRoot.startsWith("..") || path.isAbsolute(relativeToRoot);
+  const escapesDataRoot =
+    relativeToDataRoot.startsWith("..") || path.isAbsolute(relativeToDataRoot);
+
+  if (escapesProjectRoot) {
+    throw new Error("Knowledge directory cannot escape the project root.");
+  }
+
+  if (escapesDataRoot) {
+    throw new Error("Knowledge directory must stay inside the data directory.");
+  }
+
+  return absoluteRoot;
+}
+
+/**
  * Loads markdown knowledge files and returns file path with text content.
  *
  * @param directoryFromProjectRoot - Relative directory from project root.
@@ -35,7 +76,10 @@ export async function loadMarkdownKnowledge(
   directoryFromProjectRoot: string,
 ): Promise<Array<{ source: string; content: string }>> {
   const projectRoot = process.cwd();
-  const absoluteRoot = path.resolve(projectRoot, directoryFromProjectRoot);
+  const absoluteRoot = resolveSafeKnowledgeDirectory(
+    projectRoot,
+    directoryFromProjectRoot,
+  );
   const markdownFiles = await getMarkdownFilePaths(absoluteRoot);
 
   const documents = await Promise.all(

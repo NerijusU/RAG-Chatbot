@@ -28,6 +28,7 @@ export async function ingestKnowledgeBase(
 ): Promise<IngestSummary> {
   const documents = await loadMarkdownKnowledge(options.dataDirectory);
   const supabase = createServerSupabaseClient();
+  const ingestionStartedAtIso = new Date().toISOString();
 
   const chunks = documents.flatMap((document) =>
     splitTextIntoChunks(
@@ -54,21 +55,6 @@ export async function ingestKnowledgeBase(
 
   let chunksDeleted = 0;
   const sources = [...new Set(chunks.map((chunk) => chunk.source))];
-
-  if (options.replaceExisting && sources.length > 0) {
-    const { data, error } = await supabase
-      .from("rag_chunks")
-      .delete()
-      .in("source", sources)
-      .select("id");
-
-    if (error) {
-      throw new Error(`Failed deleting existing chunks: ${error.message}`);
-    }
-
-    chunksDeleted = data?.length ?? 0;
-  }
-
   const embeddedChunks = await embedKnowledgeChunks(
     chunks,
     options.embeddingModel,
@@ -80,10 +66,25 @@ export async function ingestKnowledgeBase(
     metadata: chunk.metadata,
   }));
 
-  const { error } = await supabase.from("rag_chunks").insert(rows);
+  const { error: insertError } = await supabase.from("rag_chunks").insert(rows);
 
-  if (error) {
-    throw new Error(`Failed inserting embedded chunks: ${error.message}`);
+  if (insertError) {
+    throw new Error(`Failed inserting embedded chunks: ${insertError.message}`);
+  }
+
+  if (options.replaceExisting && sources.length > 0) {
+    const { data, error } = await supabase
+      .from("rag_chunks")
+      .delete()
+      .in("source", sources)
+      .lt("created_at", ingestionStartedAtIso)
+      .select("id");
+
+    if (error) {
+      throw new Error(`Failed deleting previous chunks: ${error.message}`);
+    }
+
+    chunksDeleted = data?.length ?? 0;
   }
 
   return {
