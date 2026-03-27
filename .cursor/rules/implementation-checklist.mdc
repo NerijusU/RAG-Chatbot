@@ -14,8 +14,8 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [x] Node on LTS (if needed)
 - [x] pnpm installed; use it for this project
 - [x] Next.js app created in current project folder
-- [ ] Required dependencies installed (LangChain, OpenAI SDK, validation libs, vector DB libs)
-- [ ] OpenAI API key obtained and stored securely (`.env.local`, never in code)
+- [x] Required dependencies installed (LangChain, OpenAI SDK, validation libs, vector DB libs)
+- [x] OpenAI API key obtained and stored securely (`.env.local`, never in code)
 
 ## Domain definition
 
@@ -27,12 +27,12 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 ### 1) RAG implementation
 
-- [ ] Knowledge base ingestion pipeline implemented
-- [ ] Chunking strategy configured and documented
-- [ ] Embeddings-based retrieval implemented
-- [ ] Similarity search working with relevant top-k retrieval
+- [x] Knowledge base ingestion pipeline implemented
+- [x] Chunking strategy configured and documented
+- [x] Embeddings-based retrieval implemented
+- [x] Similarity search working with relevant top-k retrieval
 - [ ] Query translation/rewriting step implemented for better retrieval
-- [ ] Response includes source context/citations where possible
+- [x] Response includes source context/citations where possible
 
 ### 2) Tool calling
 
@@ -43,18 +43,18 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 ### 3) Domain specialization
 
-- [ ] Chatbot behavior is clearly specialized to chosen domain
-- [ ] Domain-focused knowledge base integrated into responses
-- [ ] Domain-specific safety/security considerations applied
+- [x] Chatbot behavior is clearly specialized to chosen domain
+- [x] Domain-focused knowledge base integrated into responses
+- [x] Domain-specific safety/security considerations applied
 
 ### 4) Technical implementation
 
 - [ ] LangChain integration implemented for model + retrieval workflow
-- [ ] API route validation and sanitization implemented
-- [ ] Proper error handling added (typed, safe responses)
+- [x] API route validation and sanitization implemented
+- [x] Proper error handling added (typed, safe responses)
 - [ ] Logging/monitoring added (without leaking secrets)
-- [ ] Rate limiting added for chat endpoint
-- [ ] API key management follows secure env-var practices
+- [x] Rate limiting added for chat endpoint
+- [x] API key management follows secure env-var practices
 
 ### 5) User interface
 
@@ -112,3 +112,9 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [ ] Lint passes
 - [ ] Build passes
 - [ ] App runs locally and key flows are manually tested
+
+## Productization note (single-salon workflow)
+
+- [x] Current deployment model documented: one salon per deployment (one Supabase project per salon)
+- [x] Operator-managed ingestion workflow documented (`pnpm ingest:local`)
+- [x] Source normalization policy documented (PDF/Word/web/URL -> markdown -> ingest)
