@@ -35,45 +35,98 @@ This project's domain is a hair salon assistant that helps users with:
 - `data/hair-salon/hair-types/hair-types.md`
 - `data/hair-salon/policies/booking-policy.md`
 
+### Deployment model (single salon per deployment)
+
+- This project is currently designed for one salon per deployed instance.
+- Each salon should use its own Supabase project for clean data isolation.
+- The current ingestion flow reads markdown files from the app-local `data/` directory.
+- Multi-tenant shared deployment can be added later if needed.
+
+### Knowledge source formats (operator workflow)
+
+Salon knowledge may come as PDFs, Word documents, website pages, or URLs.
+For this Sprint implementation, ingestion accepts markdown files under `data/hair-salon/**`.
+Operationally, convert external source formats into clean markdown first, then run ingestion.
+
 **Scope / current status:**
 
-- Implemented: UI frame + route wiring (`/`, `/chat`, `/history`, `/config`) and placeholder chat content.
-- In place: initial domain knowledge-base markdown files under `data/hair-salon/` (including `pricing.md`).
-- Pending: LangChain/RAG retrieval workflow, tool execution endpoints, and rendering real citations/tool results in the UI.
+- Implemented: UI frame + route wiring (`/`, `/chat`, `/history`, `/config`).
+- Implemented: Supabase connectivity and health check endpoint (`GET /api/health/supabase`).
+- Implemented: RAG ingestion endpoint (`POST /api/rag/ingest`) with validation, auth, and safe path handling.
+- Implemented: Retrieval-augmented chat endpoint (`POST /api/chat`) with rate limiting and citation payloads.
+- Implemented: local ingestion helper script (`pnpm ingest:local`) for manual operator workflow.
+- Pending: LangChain-based orchestration, query rewriting, and domain tool-calling integration in UI/backend.
 
-### Task requirements
+## Task requirements
 
-❗ - 1. **RAG Implementation**: Create a domain knowledge base and implement retrieval with embeddings.
+### Core requirements
 
-🛠️ - **Plan**:
+- [x] 1. **RAG Implementation:**
+  - [x] Create a knowledge base relevant to your domain
+    - Created a domain knowledge base under `data/hair-salon/`.
+  - [x] Implement standard document retrieval with embeddings
+    - Implemented secure ingestion (`POST /api/rag/ingest`) with chunking and OpenAI embeddings.
+  - [x] Use chunking strategies and similarity search
+    - Implemented vector retrieval (`match_rag_chunks`) used by `POST /api/chat` with citations.
 
-- Build ingestion/chunking pipeline in `src/lib/rag/`.
-- Add vector retrieval and source metadata return in `src/app/api/chat/route.ts`.
+- ❗2. **Tool Calling:**
+  - Implement at least 3 different tool calls
+- Functions should be relevant to your domain
+- Examples: data analysis, calculations, API integrations
 
-❗ - 2. **Tool Calling**: Implement at least 3 domain-relevant tools.
+  <details>
+    <summary>🛠️ - **Implementation**: </summary>
 
-🛠️ - **Plan**:
+  ```
+  🛠️ Plan:
+  - Implement tools in `src/lib/tools/` with schema validation (`zod`).
+  - Expose results in chat responses and UI.
+  ```
 
-- Implement tools in `src/lib/tools/` with schema validation (`zod`).
-- Expose results in chat responses and UI.
+  </details>
 
-❗ - 3. **Domain Specialisation**: Focus on one clear use case.
+🟡 - 3. **Domain Specialisation:**
 
-🛠️ - **Plan**:
+- Choose a specific domain or use case
+- Create a focused knowledge base
+- Implement domain-specific prompts and responses
+- Add relevant security measures for your domain
 
-- Define domain prompt strategy and guardrails.
-- Build domain-focused knowledge base in `data/`.
-- Current knowledge-base placeholders are in `data/hair-salon/` (services, pricing, FAQ, hair care, hair types, booking policy).
+  <details>
+    <summary>🛠️ - **Implementation**: </summary>
 
-❗ - 4. **Technical Implementation**: Use LangChain with error handling, logging, validation, rate limiting, and API key management.
+  ```
+  ✅ - Hair salon domain is defined and documented.
+  ✅- Domain-focused knowledge base exists under `data/hair-salon/`.
+  🛠️ - Prompt guardrails/safety can be strengthened further.
+  ```
 
-🛠️ - **Plan**:
+  </details>
 
-- Keep LLM/retrieval logic server-side only.
-- Add request validation and safe error responses.
-- Add lightweight rate limiting and structured logs.
+🟡 - 4. **Technical Implementation:**
 
-🛠️ - 5. **User Interface**: Build intuitive Next.js chat UI with context, sources, tool outputs, and progress indicators.
+- Use LangChain for OpenAI API integration
+- Implement proper error handling
+- Add logging and monitoring
+- Include user input validation
+- Implement rate limiting and API key management
+
+  <details>
+    <summary>🛠️ - **Implementation**: </summary>
+
+  ```
+  - Implemented: validation, safe errors, rate limiting, env-based key management.
+  - Pending: LangChain orchestration and deeper structured observability.
+  ```
+
+  </details>
+
+✅ - 5. **User Interface:**
+
+- Create an intuitive interface using Streamlit or Next.js
+- Show relevant context and sources
+- Display tool call results
+- Include progress indicators for long operations
 
 ✅ - **Implementation**: Responsive Next.js chat UI frame with route-based views and an autosizing prompt composer (tool outputs/citations are mocked for now).
 
@@ -120,18 +173,18 @@ export default function HomePage() {
 
 </details>
 
-### Optional tasks
+## Optional tasks
 
 ### Easy
 
-❗ - Add conversation history and export functionality.
+❗ - 1. Add conversation history and export functionality.
 
 🛠️ - **Plan**:
 
 - Persist session chat history locally.
 - Add export options (JSON first, then CSV/PDF if time allows).
 
-❗ - Include source citations in responses.
+❗ - 3. Include source citations in responses.
 
 🛠️ - **Plan**:
 
@@ -139,13 +192,13 @@ export default function HomePage() {
 
 ### Medium
 
-❗ - Implement multi-model support (OpenAI, Anthropic, etc.).
+❗ - 1. Implement multi-model support (OpenAI, Anthropic, etc.).
 
 🛠️ - **Plan**:
 
 - Add provider/model selector in UI and validate server-side.
 
-❗ - Calculate and display token usage and costs.
+❗ - 5. Calculate and display token usage and costs.
 
 🛠️ - **Plan**:
 
@@ -154,13 +207,13 @@ export default function HomePage() {
 
 ### Hard
 
-❗ - Deploy to cloud with proper scaling.
+❗ - 1. Deploy to cloud with proper scaling.
 
 🛠️ - **Plan**:
 
 - Deploy on Vercel with env var management and production checks.
 
-❗ - Implement evaluation of the RAG system.
+❗ - 9. Implement evaluation of the RAG system.
 
 🛠️ - **Plan**:
 
