@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375.83 211.76" aria-hidden="true">
+  <defs>
+    <style>
+      .nk-logo-fill {
+        fill: #fff;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <path
+    class="nk-logo-fill"
+    d="m229.87,114.49l37.81-40.38h-7.45l-55.84,58.72v-55.69l-13.56,14.18v87.08h13.56v-36.63l16.85-18.03,39.61,54.66h15.52l-46.49-63.91Z"
+  />
+  <polygon
+    class="nk-logo-fill"
+    points="100.67 186.62 99.47 185.47 265.61 11.54 266.81 12.69 100.67 186.62"
+  />
+  <path
+    class="nk-logo-fill"
+    d="m184.12,32.36v64.95l2.95-3.12,3.68-3.85.2-.2v-57.78h-6.83Zm-83.98-1.81v106.06h6.83V56.92h.6l59.29,58.42,7.14-7.47,2.58-2.68L100.88,30.55h-.74Z"
+  />
+</svg>

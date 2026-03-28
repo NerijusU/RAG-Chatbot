@@ -70,10 +70,15 @@ export default function ChatView({ messages, isLoading }: ChatViewProps) {
                   }`}
                 >
                   <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-full bg-[#454747] flex items-center justify-center flex-shrink-0 shadow-inner">
-                      <span className="material-symbols-outlined text-[#adc6ff] text-sm" data-icon="spa">
-                        spa
-                      </span>
+                    <div className="w-8 h-8 rounded-full bg-[#454747] flex items-center justify-center flex-shrink-0 shadow-inner overflow-hidden p-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- local static SVG */}
+                      <img
+                        src="/brand/nk-studio-logo.svg"
+                        alt=""
+                        width={22}
+                        height={22}
+                        className="object-contain w-full h-full"
+                      />
                     </div>
                     <div className="space-y-4 flex-1 min-w-0">
                       {msg.citations && msg.citations.length > 0 ? (

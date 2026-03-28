@@ -20,6 +20,9 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "NK Studio AI Assistant",
   description: "Salon assistant for NK Studio — services, pricing, and booking help.",
+  icons: {
+    icon: [{ url: "/brand/nk-studio-logo.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({

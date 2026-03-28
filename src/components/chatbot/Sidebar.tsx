@@ -1,7 +1,8 @@
 "use client";
 
-import type { View } from "./types";
 import Link from "next/link";
+
+import type { View } from "./types";
 
 type Props = {
   activeView: View;
@@ -11,10 +12,15 @@ export default function Sidebar({ activeView }: Props) {
   return (
     <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 z-[60] bg-[#131315] flex-col p-4 border-r border-[#48484b]/10 rounded-r-xl shadow-2xl mt-14">
       <div className="flex items-center gap-3 px-2 py-4 mb-6">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c6c6c7] to-[#454747] flex items-center justify-center">
-          <span className="material-symbols-outlined text-[#e7e5e8]" data-icon="spa">
-            spa
-          </span>
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5c5c5e] to-[#2a2a2c] flex items-center justify-center overflow-hidden p-1.5">
+          {/* eslint-disable-next-line @next/next/no-img-element -- local static SVG; avoids next/image SVG quirks */}
+          <img
+            src="/brand/nk-studio-logo.svg"
+            alt=""
+            width={28}
+            height={28}
+            className="object-contain w-full h-full"
+          />
         </div>
         <div className="flex flex-col min-w-0">
           <p className="font-headline font-bold text-[#e7e5e8] text-sm truncate">
@@ -76,11 +82,18 @@ export default function Sidebar({ activeView }: Props) {
           aria-label="Open NK Studio website in a new tab"
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm text-[#c6c6cd] hover:bg-[#272a2c] hover:text-[#e0e3e5] opacity-70 border border-transparent hover:border-[#48484b]/20"
         >
-          <span className="material-symbols-outlined shrink-0" data-icon="language">
+          <span
+            className="material-symbols-outlined shrink-0"
+            data-icon="language"
+          >
             language
           </span>
           <span className="font-body text-sm">nk-studio.org</span>
-          <span className="material-symbols-outlined text-base ml-auto shrink-0 opacity-60" data-icon="open_in_new" aria-hidden>
+          <span
+            className="material-symbols-outlined text-base ml-auto shrink-0 opacity-60"
+            data-icon="open_in_new"
+            aria-hidden
+          >
             open_in_new
           </span>
         </a>
