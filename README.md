@@ -56,12 +56,12 @@ The assistant covers service and pricing questions, booking guidance (online boo
 
 ### Core requirements
 
-- [x] 1. **RAG Implementation:**
-  - [x] Create a knowledge base relevant to your domain
+- ✅ 1. **RAG Implementation:**
+  - ✅ Create a knowledge base relevant to your domain
     - Created a domain knowledge base under `data/hair-salon/`
-  - [x] Implement standard document retrieval with embeddings
+  - ✅ Implement standard document retrieval with embeddings
     - Implemented secure ingestion (`POST /api/rag/ingest`) with chunking and OpenAI embeddings
-  - [x] Use chunking strategies and similarity search
+  - ✅ Use chunking strategies and similarity search
     - Vector retrieval via `match_rag_chunks` in `retrieveRelevantChunks`; query rewrite in `runSalonPipeline` (`src/lib/rag/queryRewrite.ts`); citations in API and `ChatView`
 
     <details>
@@ -77,36 +77,36 @@ The assistant covers service and pricing questions, booking guidance (online boo
 
     </details>
 
-- [x] 2. **Tool Calling:**
-  - [x] Implement at least 3 different tool calls
+- ✅ 2. **Tool Calling:**
+  - ✅ Implement at least 3 different tool calls
     - `checkStylistAvailability`, `getServicePrice`, `suggestAppointmentSlots` in `src/lib/tools/`; orchestration in `salonToolRound.ts`
-  - [x] Functions should be relevant to your domain
+  - ✅ Functions should be relevant to your domain
     - Availability, pricing (reads `pricing.md`), suggested slots (reads `booking-policy.md`)
-  - [x] Schema validation and UI integration
+  - ✅ Schema validation and UI integration
     - Zod schemas per tool; tool results in `POST /api/chat` response and dedicated section in `ChatView`
 
-- [x] 3. **Domain Specialisation:**
-  - [x] Choose a specific domain or use case
+- ✅ 3. **Domain Specialisation:**
+  - ✅ Choose a specific domain or use case
     - Hair salon domain is defined and documented
-  - [x] Create a focused knowledge base
+  - ✅ Create a focused knowledge base
     - Domain-focused knowledge base exists under `data/hair-salon/`
-  - [x] Implement domain-specific prompts and responses
+  - ✅ Implement domain-specific prompts and responses
     - `src/lib/llm/chat.ts` — `buildGroundedInstructions`, grounded XML blocks (`<retrieved_context>`, `<tool_results>`, `<user_message>`), basic injection guardrails
-  - [x] Add relevant security measures for your domain
+  - ✅ Add relevant security measures for your domain
     - Ingest auth, path traversal protection, input validation, chat rate limiting
 
-- [x] 4. **Technical Implementation:**
-  - [x] Use LangChain for OpenAI API integration
+- ✅ 4. **Technical Implementation:**
+  - ✅ Use LangChain for OpenAI API integration
     - `RunnableSequence` in `src/lib/llm/salonPipeline.ts`; `createSalonChatModel`; tool round with LangChain messages
-  - [x] Implement proper error handling
+  - ✅ Implement proper error handling
     - Typed/safe JSON error responses from API routes
-  - [x] Add logging and monitoring
+  - ✅ Add logging and monitoring
     - Privacy-safe JSON telemetry in `src/lib/logging/chatTelemetry.ts` (latency, counts; no full user message content)
-  - [x] Include user input validation
+  - ✅ Include user input validation
     - Zod on `POST /api/rag/ingest` and `POST /api/chat`
-  - [x] Implement rate limiting and API key management
+  - ✅ Implement rate limiting and API key management
     - In-memory chat rate limiting; server secrets via `.env.local` (local) and Vercel env (production)
-  - [x] OpenAI client resilience
+  - ✅ OpenAI client resilience
     - Timeout and limited retries in `src/lib/llm/openaiClient.ts` / `modelConfig.ts`
 
     <details>
@@ -124,14 +124,14 @@ The assistant covers service and pricing questions, booking guidance (online boo
 
     </details>
 
-- [x] 5. **User Interface:**
-  - [x] Create an intuitive interface using Streamlit or Next.js
+- ✅ 5. **User Interface:**
+  - ✅ Create an intuitive interface using Streamlit or Next.js
     - Responsive Next.js chat UI: routes, shell, `ChatComposer`, `ChatView`
-  - [x] Show relevant context and sources
+  - ✅ Show relevant context and sources
     - Citations from retriever metadata in `ChatView`
-  - [x] Display tool call results
+  - ✅ Display tool call results
     - Tool block (before assistant reply) in `ChatView`
-  - [x] Include progress indicators for long operations
+  - ✅ Include progress indicators for long operations
     - Loading state while `/api/chat` request is in flight
 
 ## Optional tasks
@@ -141,7 +141,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
 - [ ] 1. Add conversation history and export functionality
   - _TODO:_ Persist session chat history locally. Add export options (JSON first, then CSV/PDF if time allows)
 
-- [x] 3. Include source citations in responses
+- ✅ 3. Include source citations in responses
   - Implemented: citations from API rendered in `ChatView` (sources / similarity)
 
 ### Medium
@@ -154,7 +154,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
 
 ### Hard
 
-- [x] 1. Deploy to cloud with proper scaling
+- ✅ 1. Deploy to cloud with proper scaling
   - Deployed on Vercel with env var configuration; deeper scaling/hardening still optional
 
 - [ ] 6. Add multi-language support
