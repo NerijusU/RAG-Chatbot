@@ -1,10 +1,5 @@
-import ChatAppShell from "@/components/chatbot/ChatAppShell";
-import ChatView from "@/components/chatbot/views/ChatView";
+import ChatPageClient from "./ChatPageClient";
 
 export default function ChatPage() {
-  return (
-    <ChatAppShell activeView="chat">
-      <ChatView />
-    </ChatAppShell>
-  );
+  return <ChatPageClient />;
 }

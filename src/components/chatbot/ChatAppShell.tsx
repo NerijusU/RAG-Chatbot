@@ -10,6 +10,8 @@ import type { View } from "./types";
 type Props = {
   activeView: View;
   children: ReactNode;
+  /** When `activeView` is chat, replaces the default composer (e.g. wired API client). */
+  composer?: ReactNode;
 };
 
 /**
@@ -17,7 +19,7 @@ type Props = {
  * Renders the shared frame (top bar, desktop sidebar, responsive content container),
  * and conditionally shows the chat composer and mobile bottom navigation based on the active view.
  */
-export default function ChatAppShell({ activeView, children }: Props) {
+export default function ChatAppShell({ activeView, children, composer }: Props) {
   return (
     <div className="bg-[#0e0e0f] text-[#e7e5e8] font-body selection:bg-[#00ffab]/30 selection:text-[#00ffab] min-h-screen overflow-x-hidden">
       <TopBar />
@@ -31,7 +33,7 @@ export default function ChatAppShell({ activeView, children }: Props) {
         {children}
       </main>
 
-      {activeView === "chat" && <ChatComposer />}
+      {activeView === "chat" && (composer ?? <ChatComposer />)}
       <MobileBottomNav activeView={activeView} />
     </div>
   );

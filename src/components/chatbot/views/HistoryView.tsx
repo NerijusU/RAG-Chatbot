@@ -12,8 +12,7 @@ export default function HistoryView() {
             Conversation Ledger
           </h2>
           <p className="font-body text-on-surface-variant max-w-2xl leading-relaxed">
-            Browse previous sessions and resume analysis threads. This is
-            placeholder UI until the History logic is connected.
+            Browse previous salon chat sessions. Placeholder UI until history is connected to the backend.
           </p>
         </header>
 
@@ -22,18 +21,18 @@ export default function HistoryView() {
               (e.g., per-user sessions + message summaries + token usage). */}
           {[
             {
-              title: "Q3 Market Analysis: Tech Vertical",
-              model: "Sentinel-4.5 Ultra",
+              title: "Balayage pricing & timing",
+              model: "RAG + salon tools",
               status: "Active",
             },
             {
-              title: "Portfolio Exposure Risk: Alpha One",
-              model: "GPT-4 Turbo",
+              title: "Booking options & studio hours",
+              model: "RAG + salon tools",
               status: "Archived",
             },
             {
-              title: "Historical Revenue Correlation Study",
-              model: "Claude 3.5 Sonnet",
+              title: "Men’s cut — Natallia availability",
+              model: "RAG + salon tools",
               status: "Archived",
             },
           ].map((s) => (

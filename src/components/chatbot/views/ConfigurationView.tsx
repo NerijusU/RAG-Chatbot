@@ -81,7 +81,7 @@ export default function ConfigurationView() {
                   </div>
                 </div>
                 <p className="text-[10px] text-[#767578] font-label uppercase tracking-widest">
-                  Last updated: 14 days ago • Vault: Sentinel_Prod_01
+                  Last updated: 14 days ago — Vault: NK_STUDIO_KB
                 </p>
               </div>
             </div>

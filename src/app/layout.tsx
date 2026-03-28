@@ -18,8 +18,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Domain-Focused RAG Chatbot",
-  description: "Sprint 2 Next.js + LangChain chatbot",
+  title: "NK Studio AI Assistant",
+  description: "Salon assistant for NK Studio — services, pricing, and booking help.",
 };
 
 export default function RootLayout({

@@ -1,19 +1,5 @@
-import OpenAI from "openai";
-
-import { getRequiredEnv } from "@/lib/env";
+import { getOpenAIClient } from "@/lib/llm/openaiClient";
 import type { EmbeddedChunk, KnowledgeChunk } from "@/lib/rag/types";
-
-/**
- * Creates an OpenAI client for embeddings operations.
- *
- * @param none - This function does not accept any parameters.
- * @returns Configured OpenAI client instance.
- */
-function createOpenAiClient(): OpenAI {
-  return new OpenAI({
-    apiKey: getRequiredEnv("OPENAI_API_KEY"),
-  });
-}
 
 /**
  * Generates embeddings for knowledge chunks using OpenAI embeddings API.
@@ -30,7 +16,7 @@ export async function embedKnowledgeChunks(
     return [];
   }
 
-  const openAiClient = createOpenAiClient();
+  const openAiClient = getOpenAIClient();
 
   const response = await openAiClient.embeddings.create({
     model,
@@ -63,7 +49,7 @@ export async function embedQueryText(
   query: string,
   model: string,
 ): Promise<number[]> {
-  const openAiClient = createOpenAiClient();
+  const openAiClient = getOpenAIClient();
   const response = await openAiClient.embeddings.create({
     model,
     input: query,

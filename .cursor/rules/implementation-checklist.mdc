@@ -14,14 +14,16 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [x] Node on LTS (if needed)
 - [x] pnpm installed; use it for this project
 - [x] Next.js app created in current project folder
-- [x] Required dependencies installed (LangChain, OpenAI SDK, validation libs, vector DB libs)
+- [x] Required dependencies installed for current stack (OpenAI SDK, Supabase JS, Zod; vectors via Supabase pgvector)
+- [ ] LangChain package + orchestration per 125.md (not installed yet; model/RAG use OpenAI + custom `src/lib` code)
 - [x] OpenAI API key obtained and stored securely (`.env.local`, never in code)
 
 ## Domain definition
 
 - [x] Domain/use case selected and documented (clear scope)
 - [x] Knowledge sources selected and added to `data/` (hair-salon KB placeholders + extracted pricing)
-- [ ] Domain-specific system prompt and safety guardrails defined
+- [x] Domain-specific system prompt defined (`src/lib/llm/chat.ts` → `buildGroundedInstructions`, Responses API `instructions`)
+- [ ] Safety guardrails extended (prompt-injection delimiters, optional moderation, documented policy — see cross-project section)
 
 ## Core requirements (125.md)
 

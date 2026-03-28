@@ -1,11 +1,13 @@
 # Booking Policy
 
-Placeholder booking/cancellation policy for the hair salon chatbot.
+Policy notes for NK Studio (single stylist: Natallia Khatsei). Online booking is not active yet — align answers with `about/booking-links.md`.
 
-## Working hours (example)
+## Working hours
 
-- 10:00-19:00 daily.
+- Monday-Friday 10:00-19:00.
 - Last appointment slot: 18:00.
+- Saturday only with separate agreement.
+- Sunday - day off.
 
 ## Cancellation policy (example)
 
@@ -14,4 +16,4 @@ Placeholder booking/cancellation policy for the hair salon chatbot.
 
 ## If no slots are available
 
-- Suggest the nearest alternatives returned by `check_availability`.
+- Suggest contacting the studio to find alternatives; do not promise availability without confirmation.

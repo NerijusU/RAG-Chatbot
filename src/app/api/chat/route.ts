@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateGroundedAnswer } from "@/lib/llm/chat";
-import { retrieveRelevantChunks } from "@/lib/rag/retrieval";
+import { runSalonPipeline } from "@/lib/llm/salonPipeline";
+import { logChatTelemetry } from "@/lib/logging/chatTelemetry";
 
 const requestSchema = z.object({
   message: z.string().trim().min(1).max(2000),
@@ -106,33 +106,39 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const { message, topK } = parsedBody.data;
-    const chunks = await retrieveRelevantChunks(message, {
-      embeddingModel: "text-embedding-3-small",
-      matchCount: topK,
+    const started = Date.now();
+
+    const pipeline = await runSalonPipeline({ message, topK });
+
+    logChatTelemetry("chat_ok", {
+      ms: Date.now() - started,
+      messageLen: message.length,
+      citationCount: pipeline.citations.length,
+      toolInvocationCount: pipeline.toolResults.length,
+      chunkCount: pipeline.chunks.length,
     });
-    const answer = await generateGroundedAnswer(message, chunks);
-    const citations = chunks.map((chunk) => ({
-      source: chunk.source,
-      similarity: chunk.similarity,
-      excerpt: chunk.content.slice(0, 180),
-    }));
 
     return NextResponse.json(
       {
         ok: true,
-        answer,
-        citations,
+        answer: pipeline.answer,
+        citations: pipeline.citations,
+        toolResults: pipeline.toolResults,
       },
       { status: 200 },
     );
   } catch (error) {
-    const message =
+    const errText =
       error instanceof Error ? error.message : "Unexpected chat request failure.";
+
+    logChatTelemetry("chat_error", {
+      err: errText.slice(0, 120),
+    });
 
     return NextResponse.json(
       {
         ok: false,
-        error: message,
+        error: errText,
       },
       { status: 500 },
     );
