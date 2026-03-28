@@ -14,16 +14,16 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [x] Node on LTS (if needed)
 - [x] pnpm installed; use it for this project
 - [x] Next.js app created in current project folder
-- [x] Required dependencies installed for current stack (OpenAI SDK, Supabase JS, Zod; vectors via Supabase pgvector)
-- [ ] LangChain package + orchestration per 125.md (not installed yet; model/RAG use OpenAI + custom `src/lib` code)
-- [x] OpenAI API key obtained and stored securely (`.env.local`, never in code)
+- [x] Required dependencies installed (OpenAI SDK, Supabase JS, Zod, LangChain packages; vectors via Supabase pgvector)
+- [x] LangChain orchestration for chat pipeline — `src/lib/llm/salonPipeline.ts` (RunnableSequence: rewrite → retrieve → tools → answer)
+- [x] OpenAI API key obtained and stored securely (`.env.local` locally, Vercel env in production; never in code)
 
 ## Domain definition
 
 - [x] Domain/use case selected and documented (clear scope)
-- [x] Knowledge sources selected and added to `data/` (hair-salon KB placeholders + extracted pricing)
-- [x] Domain-specific system prompt defined (`src/lib/llm/chat.ts` → `buildGroundedInstructions`, Responses API `instructions`)
-- [ ] Safety guardrails extended (prompt-injection delimiters, optional moderation, documented policy — see cross-project section)
+- [x] Knowledge sources selected and added to `data/` (hair-salon KB + pricing, policies, booking context)
+- [x] Domain-specific system prompt defined — `src/lib/llm/chat.ts` → `buildGroundedInstructions` + grounded input with `<retrieved_context>`, `<tool_results>`, `<user_message>`
+- [x] Basic prompt-injection handling — untrusted user text delimited and called out in system rules (`chat.ts`); optional API moderation not wired
 
 ## Core requirements (125.md)
 
@@ -33,15 +33,15 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [x] Chunking strategy configured and documented
 - [x] Embeddings-based retrieval implemented
 - [x] Similarity search working with relevant top-k retrieval
-- [ ] Query translation/rewriting step implemented for better retrieval
-- [x] Response includes source context/citations where possible
+- [x] Query translation/rewriting — `src/lib/rag/queryRewrite.ts`, used in `runSalonPipeline`
+- [x] Response includes source context/citations where possible — API returns citations; `ChatView` renders them
 
 ### 2) Tool calling
 
-- [ ] At least 3 domain-relevant tools implemented
-- [ ] Tool input schemas validated (e.g. `zod`)
-- [ ] Tool-call errors handled gracefully
-- [ ] Tool results rendered clearly in the UI
+- [x] At least 3 domain-relevant tools — `checkStylistAvailability`, `getServicePrice`, `suggestAppointmentSlots` under `src/lib/tools/`; orchestration `salonToolRound.ts`
+- [x] Tool input schemas validated (Zod on each tool module)
+- [x] Tool-call errors handled gracefully — safe strings in tool records / `formatToolResultsForPrompt`
+- [x] Tool results rendered clearly in the UI — `ChatView` (tool block before reply)
 
 ### 3) Domain specialization
 
@@ -51,19 +51,20 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 ### 4) Technical implementation
 
-- [ ] LangChain integration implemented for model + retrieval workflow
+- [x] LangChain integration for model + retrieval workflow — `salonPipeline.ts`, `createSalonChatModel`, tool round messages
 - [x] API route validation and sanitization implemented
 - [x] Proper error handling added (typed, safe responses)
-- [ ] Logging/monitoring added (without leaking secrets)
+- [x] Privacy-safe request telemetry — `src/lib/logging/chatTelemetry.ts` (counts, latency, no message body)
 - [x] Rate limiting added for chat endpoint
 - [x] API key management follows secure env-var practices
+- [x] OpenAI client timeout + limited retries — `src/lib/llm/openaiClient.ts`, `src/lib/llm/modelConfig.ts`
 
 ### 5) User interface
 
-- [x] Intuitive chat interface implemented in Next.js (UI skeleton + responsive layout)
-- [x] Sources/citations displayed in responses (mocked UI blocks, TODO wired to backend later)
-- [x] Tool-call outputs displayed in dedicated UI area (mocked UI blocks, TODO wired to backend later)
-- [x] Progress/loading indicators shown for long operations (mocked UI states for long operations)
+- [x] Intuitive chat interface implemented in Next.js (`/chat`, shell, composer)
+- [x] Sources/citations displayed from backend in `ChatView`
+- [x] Tool-call outputs displayed in dedicated UI area in `ChatView`
+- [x] Progress/loading indicators while chat request is in flight
 
 ## Optional tasks (125.md)
 
@@ -71,7 +72,6 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 - [ ] Conversation history + export
 - [ ] RAG process visualization
-- [ ] Source citations in responses (if not already covered)
 - [ ] Interactive help/chatbot guide
 
 ### Medium
@@ -81,13 +81,13 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [ ] Advanced caching strategy
 - [ ] Authentication + personalization
 - [ ] Token usage and cost display
-- [ ] Tool-call result visualization improvements
+- [ ] Tool-call result visualization improvements (beyond current blocks)
 - [ ] Conversation export in PDF/CSV/JSON
 - [ ] Connect to public remote MCP tools
 
 ### Hard
 
-- [ ] Cloud deployment with scaling considerations
+- [ ] Cloud deployment with scaling considerations (beyond single Vercel + Supabase project)
 - [ ] Advanced indexing (e.g. RAPTOR, ColBERT)
 - [ ] A/B testing for RAG strategies
 - [ ] Automated knowledge-base updates
@@ -99,21 +99,21 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 ## Cross-project reviewer lessons (from Sprint 1)
 
-- [ ] Prompt-injection defense added (treat user input as untrusted; delimit user text blocks; optionally use moderation)
-- [ ] OpenAI/LangChain calls use timeout + retry settings; timeout returns user-friendly error
-- [ ] Prompt-iteration evidence documented (comparison notes and rationale in docs)
+- [x] Prompt-injection defense (basic): delimited blocks + system rule in `chat.ts`
+- [x] OpenAI calls use timeout + retry settings — `openaiClient.ts` / `modelConfig.ts`
+- [ ] Prompt-iteration evidence documented (comparison notes in README or docs)
 - [ ] Unit tests added for validation and prompt/retrieval helpers
 - [ ] At least one API integration test added with mocked model client
-- [ ] Domain research documented in README or dedicated doc (niche choice, alternatives, target user need)
-- [ ] Structured logging/observability added (latency, model/tool usage, token/cost metadata)
-- [ ] Conversation context management added (sliding window and/or summarization to control token cost)
+- [ ] Domain research expanded in README (niche, alternatives, target user) — domain described; can deepen
+- [x] Structured logging (lightweight) — JSON lines in `chatTelemetry` (latency, counts; not full token/cost metrics)
+- [ ] Conversation context management (sliding window / summarization across turns)
 
 ## Review readiness
 
-- [ ] README updated with implemented `✅` items and evidence paths
-- [ ] Lint passes
-- [ ] Build passes
-- [ ] App runs locally and key flows are manually tested
+- [x] README updated with implemented items and evidence paths (see **For reviewers** + **Implementation map**)
+- [ ] Lint passes — run `pnpm lint`
+- [ ] Build passes — run `pnpm build`
+- [ ] App runs locally and key flows manually tested
 
 ## Productization note (single-salon workflow)
 

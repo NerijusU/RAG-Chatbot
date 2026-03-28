@@ -19,14 +19,17 @@ This project's domain is a hair salon assistant that helps users with:
 - Hairstyle recommendations (based on hair type and desired outcome)
 - Aftercare / hair care guidance and basic DUK (common "how long / how to prepare" questions)
 
-**Intended tool calling (domain-relevant, planned for the next implementation step):**
+### Chosen domain / use case (hair salon — NK Studio)
 
-- `check_availability`: returns available time slots for a requested service window
-- `calculate_price`: calculates price breakdown based on chosen services and hair parameters
-- `book_appointment`: confirms a reservation for a chosen time slot
-- `get_hairstyle_recommendations` (optional): recommends hairstyles using hair-type guidance from the knowledge base
+The assistant covers service and pricing questions, booking guidance (online booking not live — contact studio), stylist info (Natallia Khatsei), and care / FAQ topics from ingested markdown under `data/hair-salon/`.
 
-**Knowledge sources used for RAG (current placeholders / content in `data/`):**
+**Implemented tool calling (domain-relevant):**
+
+- `check_stylist_availability` — `src/lib/tools/checkStylistAvailability.ts`
+- `get_service_price` — `src/lib/tools/getServicePrice.ts` (reads `data/hair-salon/pricing/pricing.md`)
+- `suggest_appointment_slots` — `src/lib/tools/suggestAppointmentSlots.ts` (policy/hours from `booking-policy.md`)
+
+**Knowledge sources (RAG):**
 
 - `data/hair-salon/services/services.md`
 - `data/hair-salon/pricing/pricing.md`
@@ -34,28 +37,20 @@ This project's domain is a hair salon assistant that helps users with:
 - `data/hair-salon/care/hair-care.md`
 - `data/hair-salon/hair-types/hair-types.md`
 - `data/hair-salon/policies/booking-policy.md`
+- Plus `about/` docs (stylist profile, booking links), etc.
 
 ### Deployment model (single salon per deployment)
 
-- This project is currently designed for one salon per deployed instance.
-- Each salon should use its own Supabase project for clean data isolation.
-- The current ingestion flow reads markdown files from the app-local `data/` directory.
-- Multi-tenant shared deployment can be added later if needed.
+- One salon per deployed instance; one Supabase project per salon.
+- Ingestion reads markdown from `data/`; convert PDF/Word/web to markdown before ingest.
+- **Vercel:** set `OPENAI_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `INGEST_API_KEY` (for ingest route). `.env.local` is not deployed.
 
-### Knowledge source formats (operator workflow)
+### Scope / current status (summary)
 
-Salon knowledge may come as PDFs, Word documents, website pages, or URLs.
-For this Sprint implementation, ingestion accepts markdown files under `data/hair-salon/**`.
-Operationally, convert external source formats into clean markdown first, then run ingestion.
-
-**Scope / current status:**
-
-- Implemented: UI frame + route wiring (`/`, `/chat`, `/history`, `/config`).
-- Implemented: Supabase connectivity and health check endpoint (`GET /api/health/supabase`).
-- Implemented: RAG ingestion endpoint (`POST /api/rag/ingest`) with validation, auth, and safe path handling.
-- Implemented: Retrieval-augmented chat endpoint (`POST /api/chat`) with rate limiting and citation payloads.
-- Implemented: local ingestion helper script (`pnpm ingest:local`) for manual operator workflow.
-- Pending: LangChain-based orchestration, query rewriting, and domain tool-calling integration in UI/backend.
+- Implemented: UI (`/`, `/chat`, `/history`, `/config`), wired chat to `/api/chat`, citations and tool blocks in transcript.
+- Implemented: Supabase health (`GET /api/health/supabase`), RAG ingest (`POST /api/rag/ingest`), `pnpm ingest:local`.
+- Implemented: LangChain pipeline, query rewrite, three Zod tools, basic telemetry logs, OpenAI timeouts.
+- Not implemented / stretch: multi-turn memory, moderation API, automated tests, token/cost UI, conversation export.
 
 ## Task requirements
 
@@ -67,7 +62,7 @@ Operationally, convert external source formats into clean markdown first, then r
   - [x] Implement standard document retrieval with embeddings
     - Implemented secure ingestion (`POST /api/rag/ingest`) with chunking and OpenAI embeddings
   - [x] Use chunking strategies and similarity search
-    - Implemented vector retrieval (`match_rag_chunks`) used by `POST /api/chat` with citations
+    - Vector retrieval via `match_rag_chunks` in `retrieveRelevantChunks`; query rewrite in `runSalonPipeline` (`src/lib/rag/queryRewrite.ts`); citations in API and `ChatView`
 
     <details>
       <summary>See source snippet from <code>src/lib/rag/retrieval.ts</code></summary>
@@ -82,35 +77,37 @@ Operationally, convert external source formats into clean markdown first, then r
 
     </details>
 
-- [ ] 2. **Tool Calling:**
-  - [ ] Implement at least 3 different tool calls
-    - _TODO:_ Implement tools in `src/lib/tools/` with schema validation (`zod`)
-  - [ ] Functions should be relevant to your domain
-    - _TODO:_ Define salon-relevant tools such as availability, booking, and pricing
-  - [ ] Examples: data analysis, calculations, API integrations
-    - _TODO:_ Add at least 3 implemented tool modules and connect them to chat responses
+- [x] 2. **Tool Calling:**
+  - [x] Implement at least 3 different tool calls
+    - `checkStylistAvailability`, `getServicePrice`, `suggestAppointmentSlots` in `src/lib/tools/`; orchestration in `salonToolRound.ts`
+  - [x] Functions should be relevant to your domain
+    - Availability, pricing (reads `pricing.md`), suggested slots (reads `booking-policy.md`)
+  - [x] Schema validation and UI integration
+    - Zod schemas per tool; tool results in `POST /api/chat` response and dedicated section in `ChatView`
 
-- [ ] 3. **Domain Specialisation:**
+- [x] 3. **Domain Specialisation:**
   - [x] Choose a specific domain or use case
     - Hair salon domain is defined and documented
   - [x] Create a focused knowledge base
     - Domain-focused knowledge base exists under `data/hair-salon/`
-  - [ ] Implement domain-specific prompts and responses
-    - _TODO:_ Prompt guardrails/safety can be strengthened further
+  - [x] Implement domain-specific prompts and responses
+    - `src/lib/llm/chat.ts` — `buildGroundedInstructions`, grounded XML blocks (`<retrieved_context>`, `<tool_results>`, `<user_message>`), basic injection guardrails
   - [x] Add relevant security measures for your domain
-    - Added ingest auth, path traversal protection, and input validation/rate limiting
+    - Ingest auth, path traversal protection, input validation, chat rate limiting
 
-- [ ] 4. **Technical Implementation:**
-  - [ ] Use LangChain for OpenAI API integration
-    - _TODO:_ Replace direct provider orchestration with LangChain workflow
-  - [ ] Implement proper error handling
-    - _In progress:_ Typed/safe API error responses are already implemented in routes
-  - [ ] Add logging and monitoring
-    - _TODO:_ Add structured, privacy-safe logs for retrieval/tool/model usage
+- [x] 4. **Technical Implementation:**
+  - [x] Use LangChain for OpenAI API integration
+    - `RunnableSequence` in `src/lib/llm/salonPipeline.ts`; `createSalonChatModel`; tool round with LangChain messages
+  - [x] Implement proper error handling
+    - Typed/safe JSON error responses from API routes
+  - [x] Add logging and monitoring
+    - Privacy-safe JSON telemetry in `src/lib/logging/chatTelemetry.ts` (latency, counts; no full user message content)
   - [x] Include user input validation
-    - Added Zod request validation in `POST /api/rag/ingest` and `POST /api/chat`
+    - Zod on `POST /api/rag/ingest` and `POST /api/chat`
   - [x] Implement rate limiting and API key management
-    - Added in-memory chat rate limiting and server-side env-based secrets (`.env.local`)
+    - In-memory chat rate limiting; server secrets via `.env.local` (local) and Vercel env (production)
+  - [x] OpenAI client resilience
+    - Timeout and limited retries in `src/lib/llm/openaiClient.ts` / `modelConfig.ts`
 
     <details>
       <summary>See source snippet from <code>src/app/api/chat/route.ts</code></summary>
@@ -129,14 +126,13 @@ Operationally, convert external source formats into clean markdown first, then r
 
 - [x] 5. **User Interface:**
   - [x] Create an intuitive interface using Streamlit or Next.js
-    - Responsive Next.js chat UI frame with route-based views and an autosizing prompt composer (tool outputs/citations are mocked for now).
+    - Responsive Next.js chat UI: routes, shell, `ChatComposer`, `ChatView`
   - [x] Show relevant context and sources
-    - _TODO:_
+    - Citations from retriever metadata in `ChatView`
   - [x] Display tool call results
-    - _TODO:_
+    - Tool block (before assistant reply) in `ChatView`
   - [x] Include progress indicators for long operations
-    - _TODO:_
-
+    - Loading state while `/api/chat` request is in flight
 
 ## Optional tasks
 
@@ -145,8 +141,8 @@ Operationally, convert external source formats into clean markdown first, then r
 - [ ] 1. Add conversation history and export functionality
   - _TODO:_ Persist session chat history locally. Add export options (JSON first, then CSV/PDF if time allows)
 
-- [ ] 3. Include source citations in responses
-  - _TODO:_ Render citations from retriever metadata
+- [x] 3. Include source citations in responses
+  - Implemented: citations from API rendered in `ChatView` (sources / similarity)
 
 ### Medium
 
@@ -158,8 +154,8 @@ Operationally, convert external source formats into clean markdown first, then r
 
 ### Hard
 
-- [ ] 1. Deploy to cloud with proper scaling
-  - _TODO:_ Deploy on Vercel with env var management and production checks
+- [x] 1. Deploy to cloud with proper scaling
+  - Deployed on Vercel with env var configuration; deeper scaling/hardening still optional
 
 - [ ] 6. Add multi-language support
   - _TODO:_ Add language detection, localized prompts, and translated response templates for core salon flows
