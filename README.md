@@ -46,6 +46,17 @@ The assistant covers service and pricing questions, booking guidance (online boo
 - Implemented: LangChain pipeline, query rewrite, three Zod tools, basic telemetry logs, OpenAI timeouts.
 - Not implemented / stretch: multi-turn memory, moderation API, automated tests, token/cost UI, conversation export.
 
+### Architecture: classic RAG + tool round (flowchart)
+
+<details>
+<summary>⬇️ <strong>Show pipeline diagram</strong> (SVG)</summary>
+
+![Classic RAG + tool-calling request flow](docs/assets/rag_chatbot_classic_flowchart.svg)
+
+Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
+
+</details>
+
 ## Task requirements
 
 ### Core requirements
@@ -57,7 +68,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - Implemented secure ingestion (`POST /api/rag/ingest`) with chunking and OpenAI embeddings
 
     <details>
-      <summary>Example: ingest API (Bearer auth, chunking defaults)</summary>
+      <summary>⬇️ Example: ingest API (Bearer auth, chunking defaults)</summary>
 
     ```bash
     # Same flow as `pnpm ingest:local` — see scripts/ingest-local.mjs
@@ -79,7 +90,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - Vector retrieval via `match_rag_chunks` in `retrieveRelevantChunks`; query rewrite in `runSalonPipeline` (`src/lib/rag/queryRewrite.ts`); citations in API and `ChatView`
 
     <details>
-      <summary>See source snippet from <code>src/lib/rag/retrieval.ts</code></summary>
+      <summary>⬇️ See source snippet from <code>src/lib/rag/retrieval.ts</code></summary>
 
     ```ts
     const queryEmbedding = await embedQueryText(query, options.embeddingModel);
@@ -96,7 +107,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - `checkStylistAvailability`, `getServicePrice`, `suggestAppointmentSlots` in `src/lib/tools/`; orchestration in `salonToolRound.ts`
 
     <details>
-      <summary>Example: register tools and bind them to the chat model</summary>
+      <summary>⬇️ Example: register tools and bind them to the chat model</summary>
 
     ```ts
     // src/lib/tools/salonToolRound.ts
@@ -114,7 +125,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
     </details>
 
     <details>
-      <summary>Example: one tool with Zod input schema (LangChain <code>tool</code>)</summary>
+      <summary>⬇️ Example: one tool with Zod input schema (LangChain <code>tool</code>)</summary>
 
     ```ts
     // src/lib/tools/getServicePrice.ts (pattern repeated per tool)
@@ -128,7 +139,8 @@ The assistant covers service and pricing questions, booking guidance (online boo
       },
       {
         name: "get_service_price",
-        description: "Load the NK Studio EUR price list when the user asks for costs.",
+        description:
+          "Load the NK Studio EUR price list when the user asks for costs.",
         schema: getServicePriceSchema,
       },
     );
@@ -142,7 +154,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - Zod schemas per tool; tool results in `POST /api/chat` response and dedicated section in `ChatView`
 
     <details>
-      <summary>Example: validate chat request and return <code>toolResults</code></summary>
+      <summary>⬇️ Example: validate chat request and return <code>toolResults</code></summary>
 
     ```ts
     // src/app/api/chat/route.ts
@@ -166,25 +178,31 @@ The assistant covers service and pricing questions, booking guidance (online boo
     </details>
 
     <details>
-      <summary>Example: render tool outputs in <code>ChatView</code></summary>
+      <summary>⬇️ Example: render tool outputs in <code>ChatView</code></summary>
 
     ```tsx
     // src/components/chatbot/views/ChatView.tsx
-    {msg.toolResults && msg.toolResults.length > 0 ? (
-      <div className="rounded-xl border border-[#48484b]/25 bg-[#0e0e0f]/80 p-4 space-y-2 shadow-inner">
-        <p className="text-[10px] font-label uppercase tracking-widest text-[#c6c6cd] font-bold">
-          Tool calls (metadata)
-        </p>
-        <ul className="space-y-2 text-xs text-on-surface-variant font-mono break-words">
-          {msg.toolResults.map((t, idx) => (
-            <li key={`${msg.id}-tool-${idx}`}>
-              <span className={t.ok ? "text-[#4edea3]" : "text-[#ee7d77]"}>{t.name}</span>
-              <pre className="mt-1 text-[11px] whitespace-pre-wrap opacity-90">{t.output}</pre>
-            </li>
-          ))}
-        </ul>
-      </div>
-    ) : null}
+    {
+      msg.toolResults && msg.toolResults.length > 0 ? (
+        <div className="rounded-xl border border-[#48484b]/25 bg-[#0e0e0f]/80 p-4 space-y-2 shadow-inner">
+          <p className="text-[10px] font-label uppercase tracking-widest text-[#c6c6cd] font-bold">
+            Tool calls (metadata)
+          </p>
+          <ul className="space-y-2 text-xs text-on-surface-variant font-mono break-words">
+            {msg.toolResults.map((t, idx) => (
+              <li key={`${msg.id}-tool-${idx}`}>
+                <span className={t.ok ? "text-[#4edea3]" : "text-[#ee7d77]"}>
+                  {t.name}
+                </span>
+                <pre className="mt-1 text-[11px] whitespace-pre-wrap opacity-90">
+                  {t.output}
+                </pre>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null;
+    }
     ```
 
     </details>
@@ -200,38 +218,46 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - Ingest auth, path traversal protection, input validation, chat rate limiting
 
     <details>
-      <summary>Example: ingest — Bearer auth + <code>data/</code>-only path + traversal guard</summary>
+      <summary>⬇️ Example: ingest — Bearer auth + <code>data/</code>-only path + traversal guard</summary>
 
     ```ts
     // src/app/api/rag/ingest/route.ts
-    const requestSchema = z.object({
-      dataDirectory: z
-        .string()
-        .trim()
-        .regex(/^data(?:[\\/][a-zA-Z0-9_-]+)*$/, "dataDirectory must stay inside the data/ directory.")
-        .default("data/hair-salon"),
-      // ...
-    }).superRefine((value, context) => {
-      const pathParts = value.dataDirectory.split(/[\\/]/);
-      if (pathParts.includes("..") || pathParts.includes(".")) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "dataDirectory cannot contain path traversal segments.",
-          path: ["dataDirectory"],
-        });
-      }
-    });
+    const requestSchema = z
+      .object({
+        dataDirectory: z
+          .string()
+          .trim()
+          .regex(
+            /^data(?:[\\/][a-zA-Z0-9_-]+)*$/,
+            "dataDirectory must stay inside the data/ directory.",
+          )
+          .default("data/hair-salon"),
+        // ...
+      })
+      .superRefine((value, context) => {
+        const pathParts = value.dataDirectory.split(/[\\/]/);
+        if (pathParts.includes("..") || pathParts.includes(".")) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "dataDirectory cannot contain path traversal segments.",
+            path: ["dataDirectory"],
+          });
+        }
+      });
 
     getRequiredEnv("INGEST_API_KEY");
     if (!isAuthorizedIngestRequest(request)) {
-      return NextResponse.json({ ok: false, error: "Unauthorized ingest request." }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized ingest request." },
+        { status: 401 },
+      );
     }
     ```
 
     </details>
 
     <details>
-      <summary>Example: chat — per-client rate limit + Zod body</summary>
+      <summary>⬇️ Example: chat — per-client rate limit + Zod body</summary>
 
     ```ts
     // src/app/api/chat/route.ts
@@ -241,7 +267,10 @@ The assistant covers service and pricing questions, booking guidance (online boo
     const clientKey = getClientKey(request);
     if (!isRequestAllowed(clientKey)) {
       return NextResponse.json(
-        { ok: false, error: "Rate limit exceeded. Please wait a minute and retry." },
+        {
+          ok: false,
+          error: "Rate limit exceeded. Please wait a minute and retry.",
+        },
         { status: 429 },
       );
     }
@@ -261,7 +290,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - `RunnableSequence` in `src/lib/llm/salonPipeline.ts`; `createSalonChatModel`; tool round with LangChain messages
 
     <details>
-      <summary>Example: <code>RunnableSequence</code> pipeline (<code>salonPipeline.ts</code>)</summary>
+      <summary>⬇️ Example: <code>RunnableSequence</code> pipeline (<code>salonPipeline.ts</code>)</summary>
 
     ```ts
     const chain = RunnableSequence.from([
@@ -270,10 +299,13 @@ The assistant covers service and pricing questions, booking guidance (online boo
         return { ...state, retrievalQuery };
       }),
       RunnableLambda.from(async (state) => {
-        const chunks = await retrieveRelevantChunks(state.retrievalQuery ?? state.message, {
-          embeddingModel: "text-embedding-3-small",
-          matchCount: state.topK,
-        });
+        const chunks = await retrieveRelevantChunks(
+          state.retrievalQuery ?? state.message,
+          {
+            embeddingModel: "text-embedding-3-small",
+            matchCount: state.topK,
+          },
+        );
         return { ...state, chunks };
       }),
       RunnableLambda.from(async (state) => {
@@ -283,7 +315,11 @@ The assistant covers service and pricing questions, booking guidance (online boo
       }),
       RunnableLambda.from(async (state) => {
         const chunks = state.chunks ?? [];
-        const answer = await generateGroundedAnswer(state.message, chunks, state.toolContext);
+        const answer = await generateGroundedAnswer(
+          state.message,
+          chunks,
+          state.toolContext,
+        );
         const citations = chunks.map((c) => ({
           source: c.source,
           similarity: c.similarity,
@@ -307,12 +343,16 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - Typed/safe JSON error responses from API routes
 
     <details>
-      <summary>Example: validation vs server error shapes (<code>POST /api/chat</code>)</summary>
+      <summary>⬇️ Example: validation vs server error shapes (<code>POST /api/chat</code>)</summary>
 
     ```ts
     if (!parsedBody.success) {
       return NextResponse.json(
-        { ok: false, error: "Invalid request payload.", details: parsedBody.error.flatten() },
+        {
+          ok: false,
+          error: "Invalid request payload.",
+          details: parsedBody.error.flatten(),
+        },
         { status: 400 },
       );
     }
@@ -326,11 +366,14 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - Privacy-safe JSON telemetry in `src/lib/logging/chatTelemetry.ts` (latency, counts; no full user message content)
 
     <details>
-      <summary>Example: telemetry helper + chat success event</summary>
+      <summary>⬇️ Example: telemetry helper + chat success event</summary>
 
     ```ts
     // src/lib/logging/chatTelemetry.ts
-    export function logChatTelemetry(event: string, fields: Record<string, string | number | boolean>): void {
+    export function logChatTelemetry(
+      event: string,
+      fields: Record<string, string | number | boolean>,
+    ): void {
       console.info(JSON.stringify({ event, t: Date.now(), ...fields }));
     }
 
@@ -350,13 +393,17 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - Zod on `POST /api/rag/ingest` and `POST /api/chat`
 
     <details>
-      <summary>Example: <code>safeParse</code> on both chat and ingest</summary>
+      <summary>⬇️ Example: <code>safeParse</code> on both chat and ingest</summary>
 
     ```ts
     const parsedBody = requestSchema.safeParse(body);
     if (!parsedBody.success) {
       return NextResponse.json(
-        { ok: false, error: "Invalid request payload.", details: parsedBody.error.flatten() },
+        {
+          ok: false,
+          error: "Invalid request payload.",
+          details: parsedBody.error.flatten(),
+        },
         { status: 400 },
       );
     }
@@ -368,13 +415,16 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - In-memory chat rate limiting; server secrets via `.env.local` (local) and Vercel env (production)
 
     <details>
-      <summary>Example: chat rate limit + required env reads</summary>
+      <summary>⬇️ Example: chat rate limit + required env reads</summary>
 
     ```ts
     // src/app/api/chat/route.ts — per-client key, fixed window
     if (!isRequestAllowed(clientKey)) {
       return NextResponse.json(
-        { ok: false, error: "Rate limit exceeded. Please wait a minute and retry." },
+        {
+          ok: false,
+          error: "Rate limit exceeded. Please wait a minute and retry.",
+        },
         { status: 429 },
       );
     }
@@ -395,7 +445,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
     - Timeout and limited retries in `src/lib/llm/openaiClient.ts` / `modelConfig.ts`
 
     <details>
-      <summary>Example: singleton client with timeout + retries</summary>
+      <summary>⬇️ Example: singleton client with timeout + retries</summary>
 
     ```ts
     // src/lib/llm/openaiClient.ts
