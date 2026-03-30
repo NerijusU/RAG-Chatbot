@@ -37,14 +37,14 @@ The assistant covers service and pricing questions, booking guidance (online boo
 
 - One salon per deployed instance; one Supabase project per salon.
 - Ingestion reads markdown from `data/`; convert PDF/Word/web to markdown before ingest.
-- **Vercel:** set `OPENAI_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `INGEST_API_KEY` (for ingest route). `.env.local` is not deployed.
+- **Vercel:** set `OPENAI_API_KEY`, optional `ANTHROPIC_API_KEY` if offering Claude models, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `INGEST_API_KEY` (for ingest route). `.env.local` is not deployed.
 
 ### Scope / current status (summary)
 
-- Implemented: UI (`/`, `/chat`, `/history`, `/config`), wired chat to `/api/chat`, citations and tool blocks in transcript.
+- Implemented: UI (`/`, `/chat`, `/history`), shell with model selector (`Sidebar` / `ChatComposer`), wired chat to `/api/chat`, citations, tool blocks, token usage + estimated cost per message and per session (`ChatView`).
 - Implemented: Supabase health (`GET /api/health/supabase`), RAG ingest (`POST /api/rag/ingest`), `pnpm ingest:local`.
-- Implemented: LangChain pipeline, query rewrite, three Zod tools, basic telemetry logs, OpenAI timeouts.
-- Not implemented / stretch: multi-turn memory, moderation API, automated tests, token/cost UI, conversation export.
+- Implemented: LangChain pipeline, query rewrite, three Zod tools, telemetry (including token totals on successful chat), OpenAI + optional Anthropic chat via `createSalonChatModel`.
+- Not implemented / stretch: multi-turn memory, moderation API, automated tests, persisted history + export (JSON/CSV/PDF).
 
 ### Architecture: classic RAG + tool round (flowchart)
 

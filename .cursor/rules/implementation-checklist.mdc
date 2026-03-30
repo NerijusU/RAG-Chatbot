@@ -14,9 +14,10 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [x] Node on LTS (if needed)
 - [x] pnpm installed; use it for this project
 - [x] Next.js app created in current project folder
-- [x] Required dependencies installed (OpenAI SDK, Supabase JS, Zod, LangChain packages; vectors via Supabase pgvector)
+- [x] Required dependencies installed (OpenAI SDK, Supabase JS, Zod, LangChain packages, `@langchain/anthropic` for optional Claude path; vectors via Supabase pgvector)
 - [x] LangChain orchestration for chat pipeline — `src/lib/llm/salonPipeline.ts` (RunnableSequence: rewrite → retrieve → tools → answer)
 - [x] OpenAI API key obtained and stored securely (`.env.local` locally, Vercel env in production; never in code)
+- [x] Optional Anthropic: `ANTHROPIC_API_KEY` in `.env.example` / Vercel when using `anthropic:*` ids from `src/lib/llm/modelCatalog.ts`
 
 ## Domain definition
 
@@ -51,13 +52,13 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 ### 4) Technical implementation
 
-- [x] LangChain integration for model + retrieval workflow — `salonPipeline.ts`, `createSalonChatModel`, tool round messages
+- [x] LangChain integration for model + retrieval workflow — `salonPipeline.ts`, `createSalonChatModel` (OpenAI + optional Anthropic), tool round messages
 - [x] API route validation and sanitization implemented
 - [x] Proper error handling added (typed, safe responses)
-- [x] Privacy-safe request telemetry — `src/lib/logging/chatTelemetry.ts` (counts, latency, no message body)
+- [x] Privacy-safe request telemetry — `src/lib/logging/chatTelemetry.ts` (counts, latency, token totals + `modelId` on success; no message body)
 - [x] Rate limiting added for chat endpoint
 - [x] API key management follows secure env-var practices
-- [x] OpenAI client timeout + limited retries — `src/lib/llm/openaiClient.ts`, `src/lib/llm/modelConfig.ts`
+- [x] Chat model timeout + limited retries — `openaiClient.ts` / `ChatOpenAI` in `createSalonChatModel.ts`; Anthropic via `clientOptions.timeout`
 
 ### 5) User interface
 
@@ -76,18 +77,18 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 ### Medium
 
-- [ ] Multi-model support (OpenAI, Anthropic, etc.)
+- [x] Multi-model support (OpenAI, Anthropic, etc.) — `modelCatalog.ts`, validated `modelId` in `POST /api/chat`, selectors in `Sidebar` (desktop) + `ChatComposer` (mobile), `createSalonChatModel`
 - [ ] Real-time knowledge-base updates
 - [ ] Advanced caching strategy
 - [ ] Authentication + personalization
-- [ ] Token usage and cost display
+- [x] Token usage and cost display — aggregated in `salonPipeline.ts` / `usage.ts`; per-message + session in `ChatView`; README optional section notes sprint vs. single-model product stance
 - [ ] Tool-call result visualization improvements (beyond current blocks)
 - [ ] Conversation export in PDF/CSV/JSON
 - [ ] Connect to public remote MCP tools
 
 ### Hard
 
-- [ ] Cloud deployment with scaling considerations (beyond single Vercel + Supabase project)
+- [x] Cloud deployment with scaling considerations (beyond single Vercel + Supabase project) — live on Vercel + env vars; deeper scaling/hardening still optional (per README optional Hard)
 - [ ] Advanced indexing (e.g. RAPTOR, ColBERT)
 - [ ] A/B testing for RAG strategies
 - [ ] Automated knowledge-base updates
@@ -100,12 +101,12 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 ## Cross-project reviewer lessons (from Sprint 1)
 
 - [x] Prompt-injection defense (basic): delimited blocks + system rule in `chat.ts`
-- [x] OpenAI calls use timeout + retry settings — `openaiClient.ts` / `modelConfig.ts`
+- [x] OpenAI + Anthropic chat timeouts / limited retries — `openaiClient.ts`, `modelConfig.ts`, `createSalonChatModel.ts`
 - [ ] Prompt-iteration evidence documented (comparison notes in README or docs)
 - [ ] Unit tests added for validation and prompt/retrieval helpers
 - [ ] At least one API integration test added with mocked model client
 - [ ] Domain research expanded in README (niche, alternatives, target user) — domain described; can deepen
-- [x] Structured logging (lightweight) — JSON lines in `chatTelemetry` (latency, counts; not full token/cost metrics)
+- [x] Structured logging (lightweight) — JSON lines in `chatTelemetry` (latency, counts, token totals + `modelId` on chat_ok; no message body; estimated USD not logged)
 - [ ] Conversation context management (sliding window / summarization across turns)
 
 ## Review readiness
