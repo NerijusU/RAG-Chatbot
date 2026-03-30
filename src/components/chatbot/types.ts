@@ -1,1 +1,1 @@
-export type View = "chat" | "history" | "config";
+export type View = "chat" | "history";

@@ -23,6 +23,23 @@ export default function ChatView({ messages, isLoading }: ChatViewProps) {
     () => (messages.length > 0 ? messages[messages.length - 1].id : null),
     [messages],
   );
+  const sessionUsage = useMemo(() => {
+    return messages.reduce(
+      (acc, message) => {
+        if (message.role !== "assistant" || !message.usage) {
+          return acc;
+        }
+
+        return {
+          inputTokens: acc.inputTokens + message.usage.inputTokens,
+          outputTokens: acc.outputTokens + message.usage.outputTokens,
+          totalTokens: acc.totalTokens + message.usage.totalTokens,
+          estimatedCostUsd: acc.estimatedCostUsd + message.usage.estimatedCostUsd,
+        };
+      },
+      { inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCostUsd: 0 },
+    );
+  }, [messages]);
 
   /**
    * Keeps the transcript scrolled to the latest content (user message, loading row, or assistant reply).
@@ -41,6 +58,21 @@ export default function ChatView({ messages, isLoading }: ChatViewProps) {
             <p className="text-on-surface-variant text-sm">
               Ask about services, pricing, or availability. Answers use your ingested salon knowledge base plus optional
               booking tools.
+            </p>
+          </div>
+        ) : null}
+        {messages.length > 0 ? (
+          <div className="max-w-3xl mx-auto rounded-xl border border-[#48484b]/25 bg-[#131315]/90 p-4 space-y-2">
+            <p className="text-[10px] font-label uppercase tracking-widest text-[#c6c6cd] font-bold">
+              Session usage
+            </p>
+            <p className="text-xs text-on-surface-variant">
+              Input {sessionUsage.inputTokens.toLocaleString()} · Output{" "}
+              {sessionUsage.outputTokens.toLocaleString()} · Total{" "}
+              {sessionUsage.totalTokens.toLocaleString()}
+            </p>
+            <p className="text-xs text-on-surface-variant">
+              Estimated cost ${sessionUsage.estimatedCostUsd.toFixed(6)}
             </p>
           </div>
         ) : null}
@@ -129,6 +161,24 @@ export default function ChatView({ messages, isLoading }: ChatViewProps) {
                         </p>
                         <p className="text-on-surface-variant text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                       </div>
+                      {msg.usage ? (
+                        <div className="rounded-xl border border-[#48484b]/25 bg-[#0e0e0f]/80 p-3 space-y-1">
+                          <p className="text-[10px] font-label uppercase tracking-widest text-[#c6c6cd] font-bold">
+                            Token usage
+                          </p>
+                          <p className="text-xs text-on-surface-variant">
+                            Model: {msg.usage.modelId}
+                          </p>
+                          <p className="text-xs text-on-surface-variant">
+                            Input {msg.usage.inputTokens.toLocaleString()} ·
+                            Output {msg.usage.outputTokens.toLocaleString()} ·
+                            Total {msg.usage.totalTokens.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-on-surface-variant">
+                            Estimated cost ${msg.usage.estimatedCostUsd.toFixed(6)}
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>

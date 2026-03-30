@@ -1,8 +1,10 @@
+import { DEFAULT_MODEL_ID } from "@/lib/llm/modelCatalog";
+
 /**
- * Shared chat model settings for LangChain ChatOpenAI and related calls.
+ * Shared chat model settings for LangChain chat calls.
  */
 export const CHAT_MODEL_CONFIG = {
-  model: "gpt-4.1-mini",
+  defaultModelId: DEFAULT_MODEL_ID,
   temperature: 0.2,
 } as const;
 

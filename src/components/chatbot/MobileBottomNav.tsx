@@ -46,25 +46,6 @@ export default function MobileBottomNav({ activeView }: Props) {
         </span>
       </Link>
 
-      <Link
-        href="/config"
-        className={`flex flex-col items-center justify-center py-2 transition-colors ${
-          activeView === "config"
-            ? "text-[#00ffab]"
-            : "text-[#767578] opacity-60 hover:text-[#e7e5e8]"
-        }`}
-      >
-        <span
-          className="material-symbols-outlined"
-          data-icon="settings"
-          style={{ fontVariationSettings: "'FILL' 1" }}
-        >
-          settings
-        </span>
-        <span className="font-label text-[10px] font-medium uppercase tracking-widest mt-1">
-          Settings
-        </span>
-      </Link>
     </footer>
   );
 }

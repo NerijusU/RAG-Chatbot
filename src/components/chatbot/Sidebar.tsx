@@ -2,13 +2,33 @@
 
 import Link from "next/link";
 
+import type { SupportedModelId } from "@/lib/llm/modelCatalog";
 import type { View } from "./types";
+
+type ModelOption = {
+  id: SupportedModelId;
+  label: string;
+};
 
 type Props = {
   activeView: View;
+  selectedModelId?: SupportedModelId;
+  modelOptions?: ModelOption[];
+  onModelChange?: (id: SupportedModelId) => void;
 };
 
-export default function Sidebar({ activeView }: Props) {
+/**
+ * Desktop navigation sidebar with optional model selection controls.
+ *
+ * @param props - Active view and optional model selector state/callback.
+ * @returns Sidebar navigation and status panel.
+ */
+export default function Sidebar({
+  activeView,
+  selectedModelId,
+  modelOptions,
+  onModelChange,
+}: Props) {
   return (
     <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 z-[60] bg-[#131315] flex-col p-4 border-r border-[#48484b]/10 rounded-r-xl shadow-2xl mt-14">
       <div className="flex items-center gap-3 px-2 py-4 mb-6">
@@ -61,20 +81,6 @@ export default function Sidebar({ activeView }: Props) {
           <span className="font-body text-sm">History</span>
         </Link>
 
-        <Link
-          href="/config"
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm ${
-            activeView === "config"
-              ? "bg-[#1d2022] text-[#00ffab] border-l-2 border-[#00ffab]"
-              : "text-[#c6c6cd] hover:bg-[#272a2c] hover:text-[#e0e3e5] opacity-70"
-          }`}
-        >
-          <span className="material-symbols-outlined" data-icon="settings">
-            settings
-          </span>
-          <span className="font-body text-sm">Configuration</span>
-        </Link>
-
         <a
           href="https://nk-studio.org"
           target="_blank"
@@ -98,6 +104,33 @@ export default function Sidebar({ activeView }: Props) {
           </span>
         </a>
       </nav>
+
+      {activeView === "chat" &&
+      selectedModelId &&
+      modelOptions &&
+      modelOptions.length > 0 ? (
+        <div className="mb-4 rounded-lg border border-[#48484b]/20 bg-[#161618] p-3">
+          <label className="flex flex-col gap-2">
+            <span className="font-label text-[10px] uppercase tracking-widest text-[#c6c6cd]">
+              Model
+            </span>
+            <select
+              value={selectedModelId}
+              onChange={(event) =>
+                onModelChange?.(event.currentTarget.value as SupportedModelId)
+              }
+              className="w-full bg-[#1f1f22] border border-[#48484b]/30 rounded-md px-2 py-2 text-xs text-[#e7e5e8] focus:outline-none focus:ring-1 focus:ring-[#4edea3]/40"
+              aria-label="Select chat model"
+            >
+              {modelOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      ) : null}
 
       <div className="mt-auto pt-4 border-t border-[#48484b]/10">
         <div className="flex justify-between items-center px-3">

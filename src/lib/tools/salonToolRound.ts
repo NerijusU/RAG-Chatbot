@@ -1,6 +1,12 @@
 import { AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage } from "@langchain/core/messages";
 
 import { createSalonChatModel } from "@/lib/llm/createSalonChatModel";
+import type { SupportedModelId } from "@/lib/llm/modelCatalog";
+import {
+  extractTokenUsage,
+  sumTokenUsage,
+  type TokenUsage,
+} from "@/lib/llm/usage";
 import { checkStylistAvailabilityTool } from "@/lib/tools/checkStylistAvailability";
 import { getServicePriceTool } from "@/lib/tools/getServicePrice";
 import { suggestAppointmentSlotsTool } from "@/lib/tools/suggestAppointmentSlots";
@@ -9,6 +15,11 @@ export type SalonToolCallRecord = {
   name: string;
   ok: boolean;
   output: string;
+};
+
+export type SalonToolRoundResult = {
+  records: SalonToolCallRecord[];
+  usage: TokenUsage;
 };
 
 const SALON_TOOLS = [
@@ -30,10 +41,14 @@ const MAX_TOOL_ROUNDS = 2;
  * Runs up to two model turns that may invoke salon tools; executes tools server-side and returns structured records for the API/UI.
  *
  * @param userMessage - Original user text from the chat request.
- * @returns One record per tool invocation (success or safe error message).
+ * @param modelId - Selected provider/model id for this chat request.
+ * @returns One record per tool invocation plus cumulative token usage for tool-round model calls.
  */
-export async function runSalonToolRound(userMessage: string): Promise<SalonToolCallRecord[]> {
-  const llm = createSalonChatModel();
+export async function runSalonToolRound(
+  userMessage: string,
+  modelId: SupportedModelId,
+): Promise<SalonToolRoundResult> {
+  const llm = createSalonChatModel(modelId);
   const bound = llm.bindTools([...SALON_TOOLS], { tool_choice: "auto" });
 
   const records: SalonToolCallRecord[] = [];
@@ -50,7 +65,12 @@ export async function runSalonToolRound(userMessage: string): Promise<SalonToolC
     new HumanMessage(userMessage),
   ];
 
+  let totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
   let response = await bound.invoke(messages);
+
+  if (response instanceof AIMessage) {
+    totalUsage = sumTokenUsage(totalUsage, extractTokenUsage(response));
+  }
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     if (!(response instanceof AIMessage)) {
@@ -106,7 +126,10 @@ export async function runSalonToolRound(userMessage: string): Promise<SalonToolC
 
     messages.splice(0, messages.length, ...followUp);
     response = await bound.invoke(messages);
+    if (response instanceof AIMessage) {
+      totalUsage = sumTokenUsage(totalUsage, extractTokenUsage(response));
+    }
   }
 
-  return records;
+  return { records, usage: totalUsage };
 }

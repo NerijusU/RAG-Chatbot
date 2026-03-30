@@ -2,6 +2,13 @@
 
 import { useRef, type KeyboardEvent, type SubmitEvent } from "react";
 
+import type { SupportedModelId } from "@/lib/llm/modelCatalog";
+
+type ModelOption = {
+  id: SupportedModelId;
+  label: string;
+};
+
 type ChatComposerProps = {
   /** Called with trimmed user text when they send a message. */
   onSend?: (text: string) => void | Promise<void>;
@@ -9,6 +16,12 @@ type ChatComposerProps = {
   disabled?: boolean;
   /** Optional API or validation error shown under the field. */
   error?: string | null;
+  /** Current selected provider/model id. */
+  selectedModelId?: SupportedModelId;
+  /** Model options available for user selection. */
+  modelOptions?: ModelOption[];
+  /** Called when model selection changes. */
+  onModelChange?: (id: SupportedModelId) => void;
 };
 
 /**
@@ -17,7 +30,14 @@ type ChatComposerProps = {
  * @param props - Optional send handler, disabled state, and error text.
  * @returns Composer UI for the chat page.
  */
-export default function ChatComposer({ onSend, disabled, error }: ChatComposerProps) {
+export default function ChatComposer({
+  onSend,
+  disabled,
+  error,
+  selectedModelId,
+  modelOptions,
+  onModelChange,
+}: ChatComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   /**
@@ -82,20 +102,33 @@ export default function ChatComposer({ onSend, disabled, error }: ChatComposerPr
   return (
     <div className="fixed bottom-14 left-0 right-0 md:bottom-0 md:left-64 p-4 bg-gradient-to-t from-[#0e0e0f] via-[#0e0e0f]/90 to-transparent pt-10">
       <div className="max-w-4xl mx-auto">
+        {modelOptions && modelOptions.length > 0 && selectedModelId ? (
+          <label className="md:hidden flex items-center gap-2 mb-2 px-1">
+            <span className="font-label text-[10px] text-[#c6c6cd] uppercase tracking-widest">
+              Model
+            </span>
+            <select
+              className="flex-1 bg-[#161618] border border-[#48484b]/30 rounded-md px-2 py-2 text-xs text-[#e7e5e8] focus:outline-none focus:ring-1 focus:ring-[#4edea3]/40 disabled:opacity-50"
+              disabled={disabled}
+              value={selectedModelId}
+              onChange={(event) =>
+                onModelChange?.(event.currentTarget.value as SupportedModelId)
+              }
+              aria-label="Select chat model"
+            >
+              {modelOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
         <form
           className="relative bg-[#1f1f22] rounded-xl p-2 flex items-end gap-2 shadow-2xl ring-1 ring-[#48484b]/10 focus-within:ring-[#48484b]/20 transition-all"
           onSubmit={handleSubmit}
         >
-          <button
-            type="button"
-            className="p-3 text-[#c6c6c7] hover:text-[#e7e5e8] transition-colors"
-            aria-label="attach"
-          >
-            <span className="material-symbols-outlined" data-icon="attach_file">
-              attach_file
-            </span>
-          </button>
-
           <textarea
             ref={textareaRef}
             name="message"
@@ -110,15 +143,18 @@ export default function ChatComposer({ onSend, disabled, error }: ChatComposerPr
           />
 
           <div className="flex items-center gap-2 p-1">
-            <button
-              type="button"
-              className="p-3 text-[#c6c6c7] hover:text-[#e7e5e8] transition-colors"
-              aria-label="mic"
-            >
-              <span className="material-symbols-outlined" data-icon="mic">
-                mic
-              </span>
-            </button>
+            {/* microphone button */}
+            {/*
+              <button
+                type="button"
+                className="p-3 text-[#c6c6c7] hover:text-[#e7e5e8] transition-colors"
+                aria-label="mic"
+              >
+                <span className="material-symbols-outlined" data-icon="mic">
+                  mic
+                </span>
+              </button>
+            */}
             <button
               type="submit"
               className="bg-[#00ffab] text-[#0e0e0f] p-3 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center active:scale-[0.98] disabled:opacity-50"
@@ -137,13 +173,18 @@ export default function ChatComposer({ onSend, disabled, error }: ChatComposerPr
         </form>
 
         {error ? (
-          <p id="chat-composer-error" className="text-center text-xs text-[#ee7d77] mt-2" role="alert">
+          <p
+            id="chat-composer-error"
+            className="text-center text-xs text-[#ee7d77] mt-2"
+            role="alert"
+          >
             {error}
           </p>
         ) : null}
 
         <p className="text-center font-label text-[9px] text-[#767578] mt-3 uppercase tracking-[0.2em] opacity-70">
-          Salon assistant uses AI and your knowledge base — confirm bookings and prices at the desk.
+          Salon assistant uses AI and your knowledge base — confirm bookings and
+          prices at the desk.
         </p>
       </div>
     </div>
