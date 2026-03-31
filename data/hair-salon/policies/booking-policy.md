@@ -1,6 +1,6 @@
 # Booking Policy
 
-Policy notes for NK Studio (single stylist: Natallia Khatsei). Online booking is not active yet — align answers with `about/booking-links.md`.
+Policy notes for NK Studio (single stylist: Natallia Khatsei). Online booking is available via SumUp Bookings — align answers with `about/booking-links.md`.
 
 ## Working hours
 
