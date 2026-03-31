@@ -1,17 +1,15 @@
 # Booking Links
 
 Current status:
-- **Online booking is not live yet.** There is no public self-service booking URL to share.
-- **How to book today:** contact the studio — Email **info@nk-studio.org** and website **nk-studio.org** (see stylist profile for details).
+- **Online booking is live.** Primary self-service booking URL (SumUp Bookings):
+  - `https://www.sumupbookings.com/natallia-khatsei`
+- **Alternative ways to book:** contact the studio — Email **info@nk-studio.org** and website **nk-studio.org** (see stylist profile for details).
 
-Planned (not yet available):
-- A **SumUp Bookings-style** booking page (choose service → time → confirm), comparable to typical independent salon booking flows. When it goes live, this document will list the real URL.
-
-How it will work once online booking is active (for user expectations):
+How online booking works:
 1. Choose the service (haircut, color, etc.).
 2. Pick an available time with Natallia Khatsei.
-3. Confirm the reservation.
+3. Confirm the reservation directly on the SumUp page.
 
 Answer intent:
-- When the user asks for "booking", "appointment", "schedule", or "how can I book", explain that online booking is not active yet, give **email + website**, and mention that a SumUp-style booking link is planned.
-- Do **not** invent or guess a booking URL.
+- When the user asks for "booking", "appointment", "schedule", or "how can I book", prefer the **SumUp booking link** above and optionally mention email/website as alternatives.
+- Do **not** invent or guess any other booking URLs; use only the canonical SumUp link from this document.

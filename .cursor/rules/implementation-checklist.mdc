@@ -62,7 +62,7 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 ### 5) User interface
 
-- [x] Intuitive chat interface implemented in Next.js (`/chat`, shell, composer)
+- [x] Intuitive chat interface implemented in Next.js (`/` on `chat.nk-studio.org`, shell, composer)
 - [x] Sources/citations displayed from backend in `ChatView`
 - [x] Tool-call outputs displayed in dedicated UI area in `ChatView`
 - [x] Progress/loading indicators while chat request is in flight
