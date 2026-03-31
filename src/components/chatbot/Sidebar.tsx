@@ -55,7 +55,7 @@ export default function Sidebar({
 
       <nav className="flex flex-col gap-2 flex-grow">
         <Link
-          href="/nk-studio-chat"
+          href="/"
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm ${
             activeView === "chat"
               ? "bg-[#1d2022] text-[#00ffab] border-l-2 border-[#00ffab]"

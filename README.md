@@ -3,7 +3,7 @@
 A specialised chatbot project for Sprint 2 using Next.js, LangChain, advanced RAG, and tool calling.  
 The goal is to provide context-aware, domain-specific answers with practical tool integrations.
 
-**Live demo:** [https://rag-chatbot-nu-woad.vercel.app/](https://rag-chatbot-nu-woad.vercel.app/)
+**Live demo:** [https://chat.nk-studio.org/](https://chat.nk-studio.org/)
 
 ---
 
@@ -41,7 +41,7 @@ The assistant covers service and pricing questions, booking guidance (online boo
 
 ### Scope / current status (summary)
 
-- Implemented: UI (`/`, `/nk-studio-chat`), shell with model selector (`Sidebar` / `ChatComposer`), wired chat to `/api/chat`, citations, tool blocks, token usage + estimated cost per message and per session (`ChatView`).
+- Implemented: UI (`/` on `chat.nk-studio.org`), shell with model selector (`Sidebar` / `ChatComposer`), wired chat to `/api/chat`, citations, tool blocks, token usage + estimated cost per message and per session (`ChatView`).
 - Implemented: Supabase health (`GET /api/health/supabase`), RAG ingest (`POST /api/rag/ingest`), `pnpm ingest:local`.
 - Implemented: LangChain pipeline, query rewrite, three Zod tools, telemetry (including token totals on successful chat), OpenAI + optional Anthropic chat via `createSalonChatModel`.
 - Not implemented / stretch: multi-turn memory, moderation API, automated tests, persisted history + export (JSON/CSV/PDF).
@@ -500,7 +500,11 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
         getRequiredEnv("ANTHROPIC_API_KEY");
       } catch {
         return NextResponse.json(
-          { ok: false, error: "Anthropic model selected, but ANTHROPIC_API_KEY is missing on the server." },
+          {
+            ok: false,
+            error:
+              "Anthropic model selected, but ANTHROPIC_API_KEY is missing on the server.",
+          },
           { status: 500 },
         );
       }
@@ -598,10 +602,16 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
             inputTokens: acc.inputTokens + message.usage.inputTokens,
             outputTokens: acc.outputTokens + message.usage.outputTokens,
             totalTokens: acc.totalTokens + message.usage.totalTokens,
-            estimatedCostUsd: acc.estimatedCostUsd + message.usage.estimatedCostUsd,
+            estimatedCostUsd:
+              acc.estimatedCostUsd + message.usage.estimatedCostUsd,
           };
         },
-        { inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCostUsd: 0 },
+        {
+          inputTokens: 0,
+          outputTokens: 0,
+          totalTokens: 0,
+          estimatedCostUsd: 0,
+        },
       );
     }, [messages]);
     ```

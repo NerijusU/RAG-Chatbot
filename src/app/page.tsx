@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
+import ChatPageClient from "./ChatPageClient";
 
 export default function HomePage() {
-  redirect("/nk-studio-chat");
+  return <ChatPageClient />;
 }
-
