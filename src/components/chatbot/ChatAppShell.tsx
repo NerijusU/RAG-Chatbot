@@ -5,8 +5,9 @@ import ChatComposer from "./ChatComposer";
 import MobileBottomNav from "./MobileBottomNav";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
-import type { View } from "./types";
 import type { SupportedModelId } from "@/lib/llm/modelCatalog";
+
+type View = "chat";
 
 type ModelOption = {
   id: SupportedModelId;
@@ -58,7 +59,7 @@ export default function ChatAppShell({
       </main>
 
       {activeView === "chat" && (composer ?? <ChatComposer />)}
-      <MobileBottomNav activeView={activeView} />
+      <MobileBottomNav />
     </div>
   );
 }

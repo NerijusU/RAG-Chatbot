@@ -3,7 +3,8 @@
 import Link from "next/link";
 
 import type { SupportedModelId } from "@/lib/llm/modelCatalog";
-import type { View } from "./types";
+
+type View = "chat";
 
 type ModelOption = {
   id: SupportedModelId;
@@ -54,7 +55,7 @@ export default function Sidebar({
 
       <nav className="flex flex-col gap-2 flex-grow">
         <Link
-          href="/chat"
+          href="/nk-studio-chat"
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm ${
             activeView === "chat"
               ? "bg-[#1d2022] text-[#00ffab] border-l-2 border-[#00ffab]"
@@ -65,20 +66,6 @@ export default function Sidebar({
             chat
           </span>
           <span className="font-body text-sm">Chat</span>
-        </Link>
-
-        <Link
-          href="/history"
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm ${
-            activeView === "history"
-              ? "bg-[#1d2022] text-[#00ffab] border-l-2 border-[#00ffab]"
-              : "text-[#c6c6cd] hover:bg-[#272a2c] hover:text-[#e0e3e5] opacity-70"
-          }`}
-        >
-          <span className="material-symbols-outlined" data-icon="history">
-            history
-          </span>
-          <span className="font-body text-sm">History</span>
         </Link>
 
         <a
