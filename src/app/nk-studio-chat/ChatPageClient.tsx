@@ -5,6 +5,12 @@ import { useCallback, useState } from "react";
 import ChatAppShell from "@/components/chatbot/ChatAppShell";
 import ChatComposer from "@/components/chatbot/ChatComposer";
 import ChatView from "@/components/chatbot/views/ChatView";
+import {
+  DEFAULT_MODEL_ID,
+  MODEL_CATALOG,
+  SUPPORTED_MODEL_IDS,
+  type SupportedModelId,
+} from "@/lib/llm/modelCatalog";
 import type { ChatApiError, ChatApiSuccess, ChatMessage } from "@/types/chat";
 
 /**
@@ -17,6 +23,7 @@ export default function ChatPageClient() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [modelId, setModelId] = useState<SupportedModelId>(DEFAULT_MODEL_ID);
 
   const sendMessage = useCallback(async (text: string) => {
     setError(null);
@@ -34,7 +41,7 @@ export default function ChatPageClient() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, topK: 4 }),
+        body: JSON.stringify({ message: text, topK: 4, modelId }),
       });
 
       const data = (await response.json()) as ChatApiSuccess | ChatApiError;
@@ -51,6 +58,7 @@ export default function ChatPageClient() {
         content: data.answer,
         citations: data.citations,
         toolResults: data.toolResults,
+        usage: data.usage,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -59,12 +67,30 @@ export default function ChatPageClient() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [modelId]);
 
   return (
     <ChatAppShell
       activeView="chat"
-      composer={<ChatComposer onSend={sendMessage} disabled={isLoading} error={error} />}
+      selectedModelId={modelId}
+      modelOptions={SUPPORTED_MODEL_IDS.map((id) => ({
+        id,
+        label: MODEL_CATALOG[id].label,
+      }))}
+      onModelChange={setModelId}
+      composer={
+        <ChatComposer
+          onSend={sendMessage}
+          disabled={isLoading}
+          error={error}
+          selectedModelId={modelId}
+          modelOptions={SUPPORTED_MODEL_IDS.map((id) => ({
+            id,
+            label: MODEL_CATALOG[id].label,
+          }))}
+          onModelChange={setModelId}
+        />
+      }
     >
       <ChatView messages={messages} isLoading={isLoading} />
     </ChatAppShell>

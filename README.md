@@ -37,14 +37,14 @@ The assistant covers service and pricing questions, booking guidance (online boo
 
 - One salon per deployed instance; one Supabase project per salon.
 - Ingestion reads markdown from `data/`; convert PDF/Word/web to markdown before ingest.
-- **Vercel:** set `OPENAI_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `INGEST_API_KEY` (for ingest route). `.env.local` is not deployed.
+- **Vercel:** set `OPENAI_API_KEY`, optional `ANTHROPIC_API_KEY` if offering Claude models, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `INGEST_API_KEY` (for ingest route). `.env.local` is not deployed.
 
 ### Scope / current status (summary)
 
-- Implemented: UI (`/`, `/chat`, `/history`, `/config`), wired chat to `/api/chat`, citations and tool blocks in transcript.
+- Implemented: UI (`/`, `/nk-studio-chat`), shell with model selector (`Sidebar` / `ChatComposer`), wired chat to `/api/chat`, citations, tool blocks, token usage + estimated cost per message and per session (`ChatView`).
 - Implemented: Supabase health (`GET /api/health/supabase`), RAG ingest (`POST /api/rag/ingest`), `pnpm ingest:local`.
-- Implemented: LangChain pipeline, query rewrite, three Zod tools, basic telemetry logs, OpenAI timeouts.
-- Not implemented / stretch: multi-turn memory, moderation API, automated tests, token/cost UI, conversation export.
+- Implemented: LangChain pipeline, query rewrite, three Zod tools, telemetry (including token totals on successful chat), OpenAI + optional Anthropic chat via `createSalonChatModel`.
+- Not implemented / stretch: multi-turn memory, moderation API, automated tests, persisted history + export (JSON/CSV/PDF).
 
 ### Architecture: classic RAG + tool round (flowchart)
 
@@ -480,11 +480,133 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
 
 ### Medium
 
-- [ ] 1. Implement multi-model support (OpenAI, Anthropic, etc.)
-  - _TODO:_ Add provider/model selector in UI and validate server-side
+- ✅ 1. Implement multi-model support (OpenAI, Anthropic, etc.)
+  - Implemented: selector in `ChatComposer` (mobile) and `Sidebar` (desktop), validated `modelId` in `POST /api/chat`, and provider-aware model creation in `createSalonChatModel`
+  - _Sprint vs. product:_ multi-model is here for the assignment; for a real salon consultant usually one model would be used.
 
-- [ ] 5. Calculate and display token usage and costs
-  - _TODO:_ Collect usage metadata from model responses. Show totals per message/session
+    <details>
+      <summary>⬇️ Example: Zod <code>modelId</code> + Anthropic env check (<code>src/app/api/chat/route.ts</code>)</summary>
+
+    ```ts
+    const requestSchema = z.object({
+      message: z.string().trim().min(1).max(2000),
+      topK: z.number().int().min(1).max(8).default(4),
+      modelId: z.enum(SUPPORTED_MODEL_IDS).default(DEFAULT_MODEL_ID),
+    });
+
+    const { message, topK, modelId } = parsedBody.data;
+    if (modelId.startsWith("anthropic:")) {
+      try {
+        getRequiredEnv("ANTHROPIC_API_KEY");
+      } catch {
+        return NextResponse.json(
+          { ok: false, error: "Anthropic model selected, but ANTHROPIC_API_KEY is missing on the server." },
+          { status: 500 },
+        );
+      }
+    }
+
+    const pipeline = await runSalonPipeline({ message, topK, modelId });
+    ```
+
+    </details>
+
+    <details>
+      <summary>⬇️ Example: provider switch in <code>createSalonChatModel.ts</code></summary>
+
+    ```ts
+    const selected = MODEL_CATALOG[modelId];
+
+    if (selected.provider === "anthropic") {
+      return new ChatAnthropic({
+        model: selected.model,
+        temperature,
+        maxRetries: 1,
+        clientOptions: { timeout: OPENAI_TIMEOUT_MS },
+      });
+    }
+
+    return new ChatOpenAI({
+      model: selected.model,
+      temperature,
+      timeout: OPENAI_TIMEOUT_MS,
+      maxRetries: 1,
+    });
+    ```
+
+    </details>
+
+    <details>
+      <summary>⬇️ Example: <code>POST /api/chat</code> body with <code>modelId</code></summary>
+
+    ```json
+    {
+      "message": "What does a cut cost?",
+      "topK": 4,
+      "modelId": "openai:gpt-4.1-mini"
+    }
+    ```
+
+    </details>
+
+- ✅ 5. Calculate and display token usage and costs
+  - Implemented: usage metadata aggregated in pipeline (`rewrite + tool round + final answer`) and rendered per-message/session in `ChatView`
+
+    <details>
+      <summary>⬇️ Example: aggregate usage + <code>estimateCostUsd</code> (<code>src/lib/llm/salonPipeline.ts</code>)</summary>
+
+    ```ts
+    const totalUsage = sumTokenUsage(
+      state.usage ?? { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+      grounded.usage,
+    );
+
+    return {
+      answer: grounded.answer,
+      // ...
+      usage: {
+        modelId: state.modelId,
+        inputTokens: totalUsage.inputTokens,
+        outputTokens: totalUsage.outputTokens,
+        totalTokens: totalUsage.totalTokens,
+        estimatedCostUsd: estimateCostUsd(totalUsage, state.modelId),
+      },
+    };
+    ```
+
+    </details>
+
+    <details>
+      <summary>⬇️ Example: include <code>usage</code> in JSON + session rollup in <code>ChatView.tsx</code></summary>
+
+    ```ts
+    // src/app/api/chat/route.ts — success body (trimmed)
+    return NextResponse.json({
+      ok: true,
+      answer: pipeline.answer,
+      citations: pipeline.citations,
+      toolResults: pipeline.toolResults,
+      usage: pipeline.usage,
+    });
+
+    // src/components/chatbot/views/ChatView.tsx — sum assistant rows for “Session usage”
+    const sessionUsage = useMemo(() => {
+      return messages.reduce(
+        (acc, message) => {
+          if (message.role !== "assistant" || !message.usage) return acc;
+          return {
+            inputTokens: acc.inputTokens + message.usage.inputTokens,
+            outputTokens: acc.outputTokens + message.usage.outputTokens,
+            totalTokens: acc.totalTokens + message.usage.totalTokens,
+            estimatedCostUsd: acc.estimatedCostUsd + message.usage.estimatedCostUsd,
+          };
+        },
+        { inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCostUsd: 0 },
+      );
+    }, [messages]);
+    ```
+
+    </details>
 
 ### Hard
 

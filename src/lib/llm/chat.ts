@@ -1,6 +1,8 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 
 import { createSalonChatModel } from "@/lib/llm/createSalonChatModel";
+import type { SupportedModelId } from "@/lib/llm/modelCatalog";
+import { extractTokenUsage, type TokenUsage } from "@/lib/llm/usage";
 import type { RetrievedChunk } from "@/lib/rag/retrieval";
 
 /**
@@ -72,20 +74,27 @@ export function formatToolResultsForPrompt(lines: { name: string; ok: boolean; o
   return lines.map((r) => `${r.name}: ${r.ok ? r.output : `Error: ${r.output}`}`).join("\n\n");
 }
 
+export type GroundedAnswerResult = {
+  answer: string;
+  usage: TokenUsage;
+};
+
 /**
  * Generates a grounded chatbot answer from retrieved chunks using LangChain ChatOpenAI.
  *
  * @param question - User question for the assistant.
  * @param chunks - Retrieved context chunks.
  * @param toolContext - Optional formatted tool outputs for grounding.
- * @returns Final assistant answer text.
+ * @param modelId - Selected provider/model id for this chat request.
+ * @returns Final assistant answer text plus token usage.
  */
 export async function generateGroundedAnswer(
   question: string,
   chunks: RetrievedChunk[],
   toolContext?: string,
-): Promise<string> {
-  const llm = createSalonChatModel();
+  modelId?: SupportedModelId,
+): Promise<GroundedAnswerResult> {
+  const llm = createSalonChatModel(modelId);
   const response = await llm.invoke([
     new SystemMessage(buildGroundedInstructions()),
     new HumanMessage(buildGroundedInput(question, chunks, toolContext)),
@@ -105,5 +114,8 @@ export async function generateGroundedAnswer(
             .join("")
         : String(content);
 
-  return text.trim();
+  return {
+    answer: text.trim(),
+    usage: extractTokenUsage(response),
+  };
 }

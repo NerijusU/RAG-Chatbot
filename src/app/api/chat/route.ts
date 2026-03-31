@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { getRequiredEnv } from "@/lib/env";
+import {
+  DEFAULT_MODEL_ID,
+  SUPPORTED_MODEL_IDS,
+} from "@/lib/llm/modelCatalog";
 import { runSalonPipeline } from "@/lib/llm/salonPipeline";
 import { logChatTelemetry } from "@/lib/logging/chatTelemetry";
 
 const requestSchema = z.object({
   message: z.string().trim().min(1).max(2000),
   topK: z.number().int().min(1).max(8).default(4),
+  modelId: z.enum(SUPPORTED_MODEL_IDS).default(DEFAULT_MODEL_ID),
 });
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -105,10 +111,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { message, topK } = parsedBody.data;
+    const { message, topK, modelId } = parsedBody.data;
+    if (modelId.startsWith("anthropic:")) {
+      try {
+        getRequiredEnv("ANTHROPIC_API_KEY");
+      } catch {
+        return NextResponse.json(
+          {
+            ok: false,
+            error:
+              "Anthropic model selected, but ANTHROPIC_API_KEY is missing on the server.",
+          },
+          { status: 500 },
+        );
+      }
+    }
     const started = Date.now();
 
-    const pipeline = await runSalonPipeline({ message, topK });
+    const pipeline = await runSalonPipeline({ message, topK, modelId });
 
     logChatTelemetry("chat_ok", {
       ms: Date.now() - started,
@@ -116,6 +136,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       citationCount: pipeline.citations.length,
       toolInvocationCount: pipeline.toolResults.length,
       chunkCount: pipeline.chunks.length,
+      inputTokens: pipeline.usage.inputTokens,
+      outputTokens: pipeline.usage.outputTokens,
+      totalTokens: pipeline.usage.totalTokens,
+      modelId: pipeline.usage.modelId,
     });
 
     return NextResponse.json(
@@ -124,6 +148,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         answer: pipeline.answer,
         citations: pipeline.citations,
         toolResults: pipeline.toolResults,
+        usage: pipeline.usage,
       },
       { status: 200 },
     );
