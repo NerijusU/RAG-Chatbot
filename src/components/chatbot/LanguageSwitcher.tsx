@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ComponentType } from "react";
-import { US, DE, LT, RU } from "country-flag-icons/react/3x2";
+import { GB, DE, LT, RU } from "country-flag-icons/react/3x2";
 import { useTranslations } from "next-intl";
 import { locales, type Locale } from "@/i18n";
 import { usePathname } from "next/navigation";
@@ -15,7 +15,7 @@ type LanguageSwitcherProps = {
 };
 
 const localeToFlag: Record<Locale, ComponentType<{ className?: string }>> = {
-  en: US,
+  en: GB,
   de: DE,
   lt: LT,
   ru: RU,
