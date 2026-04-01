@@ -6,7 +6,7 @@
     "usageDisclaimer": "Salon assistant uses AI and your knowledge base — confirm bookings and prices at the desk."
   },
   "ChatView": {
-    "intro": "Ask about services, pricing, or availability. Answers use your ingested salon knowledge base plus optional booking tools.",
+    "intro": "Ask about services, pricing, or availability. The assistant uses NK Studio’s information and smart tools to help you.",
     "sessionUsageTitle": "Session usage",
     "sessionUsageLine": "Input {input} · Output {output} · Total {total}",
     "sessionUsageCost": "Estimated cost ${cost}",
@@ -33,4 +33,3 @@
     "ru": "Russian"
   }
 }
-

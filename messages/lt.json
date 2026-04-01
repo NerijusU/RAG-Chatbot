@@ -6,7 +6,7 @@
     "usageDisclaimer": "Salono asistentas naudoja dirbtinį intelektą ir jūsų žinių bazę — rezervacijas ir kainas galutinai patvirtinkite salone."
   },
   "ChatView": {
-    "intro": "Paklauskite apie paslaugas, kainas ar užimtumą. Atsakymai remiasi jūsų įkelta salono žinių baze ir pasirenkamais rezervacijos įrankiais.",
+    "intro": "Klauskite apie paslaugas, kainas ar užimtumą. Asistentas naudoja NK Studio informaciją ir išmanius įrankius, kad jums padėtų.",
     "sessionUsageTitle": "Seanso naudojimas",
     "sessionUsageLine": "Įvestis {input} · Išvestis {output} · Iš viso {total}",
     "sessionUsageCost": "Numatoma kaina ${cost}",

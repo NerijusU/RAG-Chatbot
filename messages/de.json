@@ -6,7 +6,7 @@
     "usageDisclaimer": "Der Salon-Assistent verwendet KI und Ihre Wissensbasis – bestätigen Sie Buchungen und Preise im Salon."
   },
   "ChatView": {
-    "intro": "Fragen Sie nach Dienstleistungen, Preisen oder Verfügbarkeit. Antworten nutzen Ihre ingestierte Salon-Wissensbasis sowie optionale Buchungstools.",
+    "intro": "Fragen Sie nach Dienstleistungen, Preisen oder Verfügbarkeit. Der Assistent nutzt die Informationen von NK Studio und smarte Tools, um Ihnen zu helfen.",
     "sessionUsageTitle": "Sitzungsnutzung",
     "sessionUsageLine": "Eingabe {input} · Ausgabe {output} · Gesamt {total}",
     "sessionUsageCost": "Geschätzte Kosten ${cost}",
