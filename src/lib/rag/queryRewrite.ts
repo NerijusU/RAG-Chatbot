@@ -24,8 +24,8 @@ export async function rewriteQueryForRetrieval(
   const response = await rewriter.invoke([
     new SystemMessage(
       [
-        "Rewrite the user's message into a short standalone search query for a hair salon knowledge base.",
-        "Include service names, concerns, or booking intent when relevant.",
+        "The knowledge base is written in English. Rewrite the user's message into a short standalone search query in English only,",
+        "even if the user wrote in another language. Include service names, concerns, or booking intent when relevant.",
         "Reply with only the search query text — no quotes, labels, or explanation.",
       ].join(" "),
     ),

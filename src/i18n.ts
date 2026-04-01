@@ -11,3 +11,19 @@ export const defaultLocale: Locale = "de";
  */
 export const isValidLocale = (value: string): value is Locale =>
   locales.includes(value as Locale);
+
+/**
+ * Human-readable language name for LLM system prompts (assistant reply language).
+ *
+ * @param locale - Active UI locale.
+ * @returns English name of the language the model should write in.
+ */
+export function replyLanguageNameForLocale(locale: Locale): string {
+  const names: Record<Locale, string> = {
+    en: "English",
+    de: "German",
+    lt: "Lithuanian",
+    ru: "Russian",
+  };
+  return names[locale];
+}

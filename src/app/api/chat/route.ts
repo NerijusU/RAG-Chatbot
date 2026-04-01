@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { defaultLocale, locales } from "@/i18n";
 import { getRequiredEnv } from "@/lib/env";
 import {
   DEFAULT_MODEL_ID,
@@ -13,6 +14,7 @@ const requestSchema = z.object({
   message: z.string().trim().min(1).max(2000),
   topK: z.number().int().min(1).max(8).default(4),
   modelId: z.enum(SUPPORTED_MODEL_IDS).default(DEFAULT_MODEL_ID),
+  locale: z.enum(locales).default(defaultLocale),
 });
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { message, topK, modelId } = parsedBody.data;
+    const { message, topK, modelId, locale } = parsedBody.data;
     if (modelId.startsWith("anthropic:")) {
       try {
         getRequiredEnv("ANTHROPIC_API_KEY");
@@ -128,7 +130,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
     const started = Date.now();
 
-    const pipeline = await runSalonPipeline({ message, topK, modelId });
+    const pipeline = await runSalonPipeline({ message, topK, modelId, locale });
 
     logChatTelemetry("chat_ok", {
       ms: Date.now() - started,
@@ -140,6 +142,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       outputTokens: pipeline.usage.outputTokens,
       totalTokens: pipeline.usage.totalTokens,
       modelId: pipeline.usage.modelId,
+      locale,
     });
 
     return NextResponse.json(

@@ -23,7 +23,7 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 - [x] Domain/use case selected and documented (clear scope)
 - [x] Knowledge sources selected and added to `data/` (hair-salon KB + pricing, policies, booking context)
-- [x] Domain-specific system prompt defined — `src/lib/llm/chat.ts` → `buildGroundedInstructions` + grounded input with `<retrieved_context>`, `<tool_results>`, `<user_message>`
+- [x] Domain-specific system prompt defined — `src/lib/llm/chat.ts` → `buildGroundedInstructions(locale)` + grounded input with `<retrieved_context>`, `<tool_results>`, `<user_message>`; reply language from `replyLanguageNameForLocale` (`src/i18n.ts`)
 - [x] Basic prompt-injection handling — untrusted user text delimited and called out in system rules (`chat.ts`); optional API moderation not wired
 
 ## Core requirements (125.md)
@@ -34,7 +34,7 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [x] Chunking strategy configured and documented
 - [x] Embeddings-based retrieval implemented
 - [x] Similarity search working with relevant top-k retrieval
-- [x] Query translation/rewriting — `src/lib/rag/queryRewrite.ts`, used in `runSalonPipeline`
+- [x] Query translation/rewriting — `src/lib/rag/queryRewrite.ts`, used in `runSalonPipeline` (rewriter outputs **English-only** search text for the English KB)
 - [x] Response includes source context/citations where possible — API returns citations; `ChatView` renders them
 
 ### 2) Tool calling
@@ -55,7 +55,7 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [x] LangChain integration for model + retrieval workflow — `salonPipeline.ts`, `createSalonChatModel` (OpenAI + optional Anthropic), tool round messages
 - [x] API route validation and sanitization implemented
 - [x] Proper error handling added (typed, safe responses)
-- [x] Privacy-safe request telemetry — `src/lib/logging/chatTelemetry.ts` (counts, latency, token totals + `modelId` on success; no message body)
+- [x] Privacy-safe request telemetry — `src/lib/logging/chatTelemetry.ts` (counts, latency, token totals + `modelId` + `locale` on `chat_ok`; no message body)
 - [x] Rate limiting added for chat endpoint
 - [x] API key management follows secure env-var practices
 - [x] Chat model timeout + limited retries — `openaiClient.ts` / `ChatOpenAI` in `createSalonChatModel.ts`; Anthropic via `clientOptions.timeout`
@@ -93,7 +93,7 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [ ] A/B testing for RAG strategies
 - [ ] Automated knowledge-base updates
 - [ ] Model fine-tuning for domain
-- [ ] Multi-language support
+- [x] Multi-language support — UI strings + API `locale` + grounded reply language + English retrieval query (see README optional **Hard**, multi-language item)
 - [ ] Advanced analytics dashboard
 - [ ] Implement tools as MCP servers
 - [ ] RAG evaluation (RAGAs or equivalent)
@@ -106,7 +106,7 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 - [ ] Unit tests added for validation and prompt/retrieval helpers
 - [ ] At least one API integration test added with mocked model client
 - [ ] Domain research expanded in README (niche, alternatives, target user) — domain described; can deepen
-- [x] Structured logging (lightweight) — JSON lines in `chatTelemetry` (latency, counts, token totals + `modelId` on chat_ok; no message body; estimated USD not logged)
+- [x] Structured logging (lightweight) — JSON lines in `chatTelemetry` (latency, counts, token totals + `modelId` + `locale` on chat_ok; no message body; estimated USD not logged)
 - [ ] Conversation context management (sliding window / summarization across turns)
 
 ## Review readiness

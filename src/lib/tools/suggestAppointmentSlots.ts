@@ -180,7 +180,7 @@ export const suggestAppointmentSlotsTool = tool(
       const suggestedSlots = suggestedClocks.map((t) => `${preferredDay} ${t}`);
 
       const notes: string[] = [
-        "Online booking is not live — confirm any time with the studio (nk-studio.org / info@nk-studio.org).",
+        "Suggested times follow booking-policy hours only (illustrative, not a live calendar). For self-service booking, use the SumUp URL from retrieved context when available; otherwise contact nk-studio.org / info@nk-studio.org.",
       ];
 
       if (dayKey === "sunday") {

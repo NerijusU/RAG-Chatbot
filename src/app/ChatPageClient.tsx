@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useLocale } from "next-intl";
 
 import ChatAppShell from "@/components/chatbot/ChatAppShell";
 import ChatComposer from "@/components/chatbot/ChatComposer";
@@ -11,6 +12,7 @@ import {
   SUPPORTED_MODEL_IDS,
   type SupportedModelId,
 } from "@/lib/llm/modelCatalog";
+import { defaultLocale, isValidLocale, type Locale } from "@/i18n";
 import type { ChatApiError, ChatApiSuccess, ChatMessage } from "@/types/chat";
 
 /**
@@ -20,6 +22,8 @@ import type { ChatApiError, ChatApiSuccess, ChatMessage } from "@/types/chat";
  * @returns Full chat layout with wired composer and transcript.
  */
 export default function ChatPageClient() {
+  const rawLocale = useLocale();
+  const locale: Locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +45,7 @@ export default function ChatPageClient() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, topK: 4, modelId }),
+        body: JSON.stringify({ message: text, topK: 4, modelId, locale }),
       });
 
       const data = (await response.json()) as ChatApiSuccess | ChatApiError;
@@ -67,7 +71,7 @@ export default function ChatPageClient() {
     } finally {
       setIsLoading(false);
     }
-  }, [modelId]);
+  }, [modelId, locale]);
 
   return (
     <ChatAppShell

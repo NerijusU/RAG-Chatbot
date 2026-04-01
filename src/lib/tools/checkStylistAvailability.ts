@@ -10,7 +10,7 @@ const checkStylistAvailabilitySchema = z.object({
 });
 
 /**
- * Tool: returns illustrative availability for the single stylist (Natallia Khatsei); online booking is not live yet.
+ * Tool: returns illustrative availability for the single stylist (Natallia Khatsei). Self-service booking is live via SumUp; this tool does not read a live calendar.
  */
 export const checkStylistAvailabilityTool = tool(
   async ({ date, serviceName }) => {
@@ -21,16 +21,16 @@ export const checkStylistAvailabilityTool = tool(
       stylist: "Natallia Khatsei",
       studioIsSingleStylist: true,
       illustrativeOpenSlots: 4,
-      onlineBookingStatus: "not_activated_yet",
+      onlineBookingStatus: "sumup_self_service_live",
       bookingNextStep:
-        "Contact the studio via info@nk-studio.org or nk-studio.org until self-service booking goes live (planned: SumUp Bookings-style page, similar to common salon booking sites).",
-      note: "Illustrative tool output only — real availability must be confirmed with Natallia / the studio.",
+        "Share the canonical SumUp Bookings URL from retrieved context when the user wants to book online. This tool is illustrative only — confirm real slots on SumUp or by contacting info@nk-studio.org / nk-studio.org.",
+      note: "Illustrative tool output only — real availability must be confirmed on SumUp or with the studio.",
     });
   },
   {
     name: "check_stylist_availability",
     description:
-      "Check illustrative availability for Natallia Khatsei (sole stylist) on a date. Use when the user asks about booking, scheduling, or whether she is free. Remind that online booking is not active yet and contact is required until it launches.",
+      "Check illustrative availability for Natallia Khatsei (sole stylist) on a date. Use when the user asks about booking, scheduling, or whether she is free. Prefer the SumUp link from retrieved context for self-service booking; remind that this tool does not reflect a live calendar.",
     schema: checkStylistAvailabilitySchema,
   },
 );
