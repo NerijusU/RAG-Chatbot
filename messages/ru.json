@@ -1,0 +1,35 @@
+{
+  "ChatComposer": {
+    "placeholder": "Спросите об услугах, ценах или записи…",
+    "sendAriaLabel": "Отправить сообщение",
+    "modelLabel": "Модель",
+    "usageDisclaimer": "Ассистент салона использует ИИ и вашу базу знаний — окончательно подтверждайте записи и цены на стойке."
+  },
+  "ChatView": {
+    "intro": "Спросите об услугах, ценах или доступности. Ответы используют вашу загруженную базу знаний салона и при необходимости инструменты для записи.",
+    "sessionUsageTitle": "Использование сессии",
+    "sessionUsageLine": "Ввод {input} · Вывод {output} · Итого {total}",
+    "sessionUsageCost": "Оценочная стоимость ${cost}",
+    "tokenUsageTitle": "Использование токенов",
+    "tokenUsageModel": "Модель: {modelId}",
+    "tokenUsageLine": "Ввод {input} · Вывод {output} · Итого {total}",
+    "tokenUsageCost": "Оценочная стоимость ${cost}",
+    "assistantReplyTitle": "Ответ",
+    "sourcesTitle": "Источники (retrieval)",
+    "toolCallsTitle": "Вызовы инструментов (метаданные)",
+    "youLabel": "Вы",
+    "loadingTitle": "Получение данных и размышление…",
+    "loadingSubtitle": "Поиск по базе знаний и инструментам салона."
+  },
+  "TopBar": {
+    "title": "NK Studio ИИ‑ассистент"
+  },
+  "LanguageSwitcher": {
+    "label": "Сменить язык",
+    "tooltip": "Выберите язык",
+    "en": "Английский",
+    "de": "Немецкий",
+    "lt": "Литовский",
+    "ru": "Русский"
+  }
+}

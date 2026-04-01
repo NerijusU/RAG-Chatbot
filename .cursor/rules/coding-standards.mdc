@@ -1,5 +1,5 @@
 ---
-description: Role, communication, version-aware practices, JSDoc, minimal edits, and self-review
+description: Role, communication, version-aware practices, JSDoc, minimal edits, anti-overengineering, and self-review
 alwaysApply: true
 ---
 
@@ -41,7 +41,15 @@ alwaysApply: true
   6. Functionality that already works correctly
 - If unsure whether a change is necessary, choose the minimal-change solution.
 
-## 5. SELF-REVIEW
+## 5. AVOID OVERENGINEERING
+
+- Prefer **deleting or correcting** wrong or redundant code over **adding** compensating layers (wrappers, flags, duplicate paths, extra abstractions).
+- Default to the **fewest lines and fewest moving parts** that solve the problem; a smaller diff is usually better than a “more complete” design.
+- Do **not** add speculative machinery: new dependencies, generic helpers, indirection, caching, retries, or broad refactors **unless** the task clearly requires it or the project already uses the same pattern.
+- When choosing between two fixes, pick the one that **removes complexity** or reuses existing patterns instead of introducing new surface area (APIs, config, modules).
+- If the fix can be a one-line or localized change, **do that** rather than restructuring surrounding code “while you’re here.”
+
+## 6. SELF-REVIEW
 
 - After generating code, review your own changes as if performing a code review. Act like a very demanding (even picky) reviewer.
 - Verify that your modifications:

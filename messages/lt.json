@@ -1,0 +1,35 @@
+{
+  "ChatComposer": {
+    "placeholder": "Klauskite apie paslaugas, kainas ar rezervaciją…",
+    "sendAriaLabel": "Siųsti žinutę",
+    "modelLabel": "Modelis",
+    "usageDisclaimer": "Salono asistentas naudoja dirbtinį intelektą ir jūsų žinių bazę — rezervacijas ir kainas galutinai patvirtinkite salone."
+  },
+  "ChatView": {
+    "intro": "Paklauskite apie paslaugas, kainas ar užimtumą. Atsakymai remiasi jūsų įkelta salono žinių baze ir pasirenkamais rezervacijos įrankiais.",
+    "sessionUsageTitle": "Seanso naudojimas",
+    "sessionUsageLine": "Įvestis {input} · Išvestis {output} · Iš viso {total}",
+    "sessionUsageCost": "Numatoma kaina ${cost}",
+    "tokenUsageTitle": "Tokenų naudojimas",
+    "tokenUsageModel": "Modelis: {modelId}",
+    "tokenUsageLine": "Įvestis {input} · Išvestis {output} · Iš viso {total}",
+    "tokenUsageCost": "Numatoma kaina ${cost}",
+    "assistantReplyTitle": "Atsakymas",
+    "sourcesTitle": "Šaltiniai (ištraukimas)",
+    "toolCallsTitle": "Įrankių kvietimai (metaduomenys)",
+    "youLabel": "Jūs",
+    "loadingTitle": "Gaunama informacija ir galvojama…",
+    "loadingSubtitle": "Ieškoma žinių bazėje ir salono įrankiuose."
+  },
+  "TopBar": {
+    "title": "NK Studio DI asistentas"
+  },
+  "LanguageSwitcher": {
+    "label": "Keisti kalbą",
+    "tooltip": "Pasirinkite kalbą",
+    "en": "Anglų",
+    "de": "Vokiečių",
+    "lt": "Lietuvių",
+    "ru": "Rusų"
+  }
+}

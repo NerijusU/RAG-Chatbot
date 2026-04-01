@@ -1,0 +1,35 @@
+{
+  "ChatComposer": {
+    "placeholder": "Fragen Sie nach Dienstleistungen, Preisen oder Buchung…",
+    "sendAriaLabel": "Nachricht senden",
+    "modelLabel": "Modell",
+    "usageDisclaimer": "Der Salon-Assistent verwendet KI und Ihre Wissensbasis – bestätigen Sie Buchungen und Preise im Salon."
+  },
+  "ChatView": {
+    "intro": "Fragen Sie nach Dienstleistungen, Preisen oder Verfügbarkeit. Antworten nutzen Ihre ingestierte Salon-Wissensbasis sowie optionale Buchungstools.",
+    "sessionUsageTitle": "Sitzungsnutzung",
+    "sessionUsageLine": "Eingabe {input} · Ausgabe {output} · Gesamt {total}",
+    "sessionUsageCost": "Geschätzte Kosten ${cost}",
+    "tokenUsageTitle": "Token-Nutzung",
+    "tokenUsageModel": "Modell: {modelId}",
+    "tokenUsageLine": "Eingabe {input} · Ausgabe {output} · Gesamt {total}",
+    "tokenUsageCost": "Geschätzte Kosten ${cost}",
+    "assistantReplyTitle": "Antwort",
+    "sourcesTitle": "Quellen (Retrieval)",
+    "toolCallsTitle": "Tool-Aufrufe (Metadaten)",
+    "youLabel": "Sie",
+    "loadingTitle": "Abrufen & nachdenken…",
+    "loadingSubtitle": "Durchsucht die Wissensbasis und Salon-Tools."
+  },
+  "TopBar": {
+    "title": "NK Studio KI-Assistent"
+  },
+  "LanguageSwitcher": {
+    "label": "Sprache ändern",
+    "tooltip": "Sprache auswählen",
+    "en": "Englisch",
+    "de": "Deutsch",
+    "lt": "Litauisch",
+    "ru": "Russisch"
+  }
+}
