@@ -1,5 +1,6 @@
-import ChatPageClient from "./ChatPageClient";
+import { redirect } from "next/navigation";
+import { defaultLocale } from "@/i18n";
 
 export default function HomePage() {
-  return <ChatPageClient />;
+  redirect(`/${defaultLocale}`);
 }

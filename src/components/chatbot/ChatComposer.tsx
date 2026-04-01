@@ -3,6 +3,7 @@
 import { useRef, type KeyboardEvent, type SubmitEvent } from "react";
 
 import type { SupportedModelId } from "@/lib/llm/modelCatalog";
+import { useTranslations } from "next-intl";
 
 type ModelOption = {
   id: SupportedModelId;
@@ -39,6 +40,7 @@ export default function ChatComposer({
   onModelChange,
 }: ChatComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const t = useTranslations("ChatComposer");
 
   /**
    * Autosizes the textarea to its content height (up to `max-h-[50vh]`).
@@ -105,7 +107,7 @@ export default function ChatComposer({
         {modelOptions && modelOptions.length > 0 && selectedModelId ? (
           <label className="md:hidden flex items-center gap-2 mb-2 px-1">
             <span className="font-label text-[10px] text-[#c6c6cd] uppercase tracking-widest">
-              Model
+              {t("modelLabel")}
             </span>
             <select
               className="flex-1 bg-[#161618] border border-[#48484b]/30 rounded-md px-2 py-2 text-xs text-[#e7e5e8] focus:outline-none focus:ring-1 focus:ring-[#4edea3]/40 disabled:opacity-50"
@@ -114,7 +116,7 @@ export default function ChatComposer({
               onChange={(event) =>
                 onModelChange?.(event.currentTarget.value as SupportedModelId)
               }
-              aria-label="Select chat model"
+              aria-label={t("modelLabel")}
             >
               {modelOptions.map((option) => (
                 <option key={option.id} value={option.id}>
@@ -133,7 +135,7 @@ export default function ChatComposer({
             ref={textareaRef}
             name="message"
             className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-3 px-2 resize-none text-[#e7e5e8] placeholder:text-[#767578] font-body max-h-[50vh] overflow-y-auto disabled:opacity-50"
-            placeholder="Ask about services, pricing, or booking…"
+            placeholder={t("placeholder")}
             rows={1}
             disabled={disabled}
             onChange={(e) => autosize(e.currentTarget)}
@@ -158,7 +160,7 @@ export default function ChatComposer({
             <button
               type="submit"
               className="bg-[#00ffab] text-[#0e0e0f] p-3 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center active:scale-[0.98] disabled:opacity-50"
-              aria-label="send"
+              aria-label={t("sendAriaLabel")}
               disabled={disabled}
             >
               <span
@@ -183,8 +185,7 @@ export default function ChatComposer({
         ) : null}
 
         <p className="text-center font-label text-[9px] text-[#767578] mt-3 uppercase tracking-[0.2em] opacity-70">
-          Salon assistant uses AI and your knowledge base — confirm bookings and
-          prices at the desk.
+          {t("usageDisclaimer")}
         </p>
       </div>
     </div>
