@@ -1,5 +1,6 @@
 import { RunnableLambda, RunnableSequence } from "@langchain/core/runnables";
 
+import type { Locale } from "@/i18n";
 import { formatToolResultsForPrompt, generateGroundedAnswer } from "@/lib/llm/chat";
 import type { SupportedModelId } from "@/lib/llm/modelCatalog";
 import {
@@ -19,6 +20,7 @@ export type SalonPipelineInput = {
   message: string;
   topK: number;
   modelId: SupportedModelId;
+  locale: Locale;
 };
 
 export type SalonPipelineOutput = {
@@ -80,6 +82,7 @@ export async function runSalonPipeline(input: SalonPipelineInput): Promise<Salon
         chunks,
         toolContext,
         state.modelId,
+        state.locale,
       );
       const citations = chunks.map((chunk) => ({
         source: chunk.source,

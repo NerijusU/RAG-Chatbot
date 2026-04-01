@@ -21,7 +21,7 @@ This project's domain is a hair salon assistant that helps users with:
 
 ### Chosen domain / use case (hair salon — NK Studio)
 
-The assistant covers service and pricing questions, booking guidance (online booking not live — contact studio), stylist info (Natallia Khatsei), and care / FAQ topics from ingested markdown under `data/hair-salon/`.
+The assistant covers service and pricing questions, booking guidance (online self-service via SumUp — canonical URL and intent in `data/hair-salon/about/booking-links.md`; hours/cancellation in `policies/booking-policy.md`), stylist info (Natallia Khatsei), and care / FAQ topics from ingested markdown under `data/hair-salon/`. The knowledge base text is English; the UI and assistant replies support **en / de / lt / ru** (see multi-language below).
 
 **Implemented tool calling (domain-relevant):**
 
@@ -87,7 +87,7 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
     </details>
 
   - ✅ Use chunking strategies and similarity search
-    - Vector retrieval via `match_rag_chunks` in `retrieveRelevantChunks`; query rewrite in `runSalonPipeline` (`src/lib/rag/queryRewrite.ts`); citations in API and `ChatView`
+    - Vector retrieval via `match_rag_chunks` in `retrieveRelevantChunks`; query rewrite in `runSalonPipeline` (`src/lib/rag/queryRewrite.ts`) — rewriter outputs a short **English-only** query for the English KB even when the user writes in another language; citations in API and `ChatView`
 
     <details>
       <summary>⬇️ See source snippet from <code>src/lib/rag/retrieval.ts</code></summary>
@@ -158,20 +158,26 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
 
     ```ts
     // src/app/api/chat/route.ts
+    import { defaultLocale, locales } from "@/i18n";
+
     const requestSchema = z.object({
       message: z.string().trim().min(1).max(2000),
       topK: z.number().int().min(1).max(8).default(4),
+      modelId: z.enum(SUPPORTED_MODEL_IDS).default(DEFAULT_MODEL_ID),
+      locale: z.enum(locales).default(defaultLocale),
     });
 
     const body = await request.json().catch(() => ({}));
     const parsedBody = requestSchema.safeParse(body);
     // ...
-    const pipeline = await runSalonPipeline({ message, topK });
+    const { message, topK, modelId, locale } = parsedBody.data;
+    const pipeline = await runSalonPipeline({ message, topK, modelId, locale });
     return NextResponse.json({
       ok: true,
       answer: pipeline.answer,
       citations: pipeline.citations,
       toolResults: pipeline.toolResults,
+      usage: pipeline.usage,
     });
     ```
 
@@ -213,7 +219,7 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
   - ✅ Create a focused knowledge base
     - Domain-focused knowledge base exists under `data/hair-salon/`
   - ✅ Implement domain-specific prompts and responses
-    - `src/lib/llm/chat.ts` — `buildGroundedInstructions`, grounded XML blocks (`<retrieved_context>`, `<tool_results>`, `<user_message>`), basic injection guardrails
+    - `src/lib/llm/chat.ts` — `buildGroundedInstructions(locale)`, grounded XML blocks (`<retrieved_context>`, `<tool_results>`, `<user_message>`), reply language tied to UI `locale` (`replyLanguageNameForLocale` from `src/i18n.ts`), basic injection guardrails
   - ✅ Add relevant security measures for your domain
     - Ingest auth, path traversal protection, input validation, chat rate limiting
 
@@ -276,9 +282,12 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
     }
 
     const body = await request.json().catch(() => ({}));
+    // `locales` / `defaultLocale` from `@/i18n`
     const requestSchema = z.object({
       message: z.string().trim().min(1).max(2000),
       topK: z.number().int().min(1).max(8).default(4),
+      modelId: z.enum(SUPPORTED_MODEL_IDS).default(DEFAULT_MODEL_ID),
+      locale: z.enum(locales).default(defaultLocale),
     });
     const parsedBody = requestSchema.safeParse(body);
     ```
@@ -293,10 +302,12 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
       <summary>⬇️ Example: <code>RunnableSequence</code> pipeline (<code>salonPipeline.ts</code>)</summary>
 
     ```ts
+    const emptyUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+
     const chain = RunnableSequence.from([
       RunnableLambda.from(async (state) => {
-        const retrievalQuery = await rewriteQueryForRetrieval(state.message);
-        return { ...state, retrievalQuery };
+        const rewrite = await rewriteQueryForRetrieval(state.message, state.modelId);
+        return { ...state, retrievalQuery: rewrite.query, usage: rewrite.usage };
       }),
       RunnableLambda.from(async (state) => {
         const chunks = await retrieveRelevantChunks(
@@ -309,28 +320,41 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
         return { ...state, chunks };
       }),
       RunnableLambda.from(async (state) => {
-        const toolResults = await runSalonToolRound(state.message);
-        const toolContext = formatToolResultsForPrompt(toolResults);
-        return { ...state, toolResults, toolContext };
+        const toolRound = await runSalonToolRound(state.message, state.modelId);
+        const toolContext = formatToolResultsForPrompt(toolRound.records);
+        return {
+          ...state,
+          toolResults: toolRound.records,
+          toolContext,
+          usage: sumTokenUsage(state.usage ?? emptyUsage, toolRound.usage),
+        };
       }),
       RunnableLambda.from(async (state) => {
         const chunks = state.chunks ?? [];
-        const answer = await generateGroundedAnswer(
+        const grounded = await generateGroundedAnswer(
           state.message,
           chunks,
           state.toolContext,
+          state.modelId,
+          state.locale,
         );
+        const totalUsage = sumTokenUsage(state.usage ?? emptyUsage, grounded.usage);
         const citations = chunks.map((c) => ({
           source: c.source,
           similarity: c.similarity,
           excerpt: c.content.slice(0, 180),
         }));
         return {
-          answer,
+          answer: grounded.answer,
           retrievalQuery: state.retrievalQuery ?? state.message,
           chunks,
           citations,
           toolResults: state.toolResults ?? [],
+          usage: {
+            modelId: state.modelId,
+            ...totalUsage,
+            estimatedCostUsd: estimateCostUsd(totalUsage, state.modelId),
+          },
         };
       }),
     ]);
@@ -384,6 +408,11 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
       citationCount: pipeline.citations.length,
       toolInvocationCount: pipeline.toolResults.length,
       chunkCount: pipeline.chunks.length,
+      modelId: pipeline.usage.modelId,
+      inputTokens: pipeline.usage.inputTokens,
+      outputTokens: pipeline.usage.outputTokens,
+      totalTokens: pipeline.usage.totalTokens,
+      locale,
     });
     ```
 
@@ -485,16 +514,19 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
   - _Sprint vs. product:_ multi-model is here for the assignment; for a real salon consultant usually one model would be used.
 
     <details>
-      <summary>⬇️ Example: Zod <code>modelId</code> + Anthropic env check (<code>src/app/api/chat/route.ts</code>)</summary>
+      <summary>⬇️ Example: Zod <code>modelId</code>, <code>locale</code> + Anthropic env check (<code>src/app/api/chat/route.ts</code>)</summary>
 
     ```ts
+    import { defaultLocale, locales } from "@/i18n";
+
     const requestSchema = z.object({
       message: z.string().trim().min(1).max(2000),
       topK: z.number().int().min(1).max(8).default(4),
       modelId: z.enum(SUPPORTED_MODEL_IDS).default(DEFAULT_MODEL_ID),
+      locale: z.enum(locales).default(defaultLocale),
     });
 
-    const { message, topK, modelId } = parsedBody.data;
+    const { message, topK, modelId, locale } = parsedBody.data;
     if (modelId.startsWith("anthropic:")) {
       try {
         getRequiredEnv("ANTHROPIC_API_KEY");
@@ -510,7 +542,7 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
       }
     }
 
-    const pipeline = await runSalonPipeline({ message, topK, modelId });
+    const pipeline = await runSalonPipeline({ message, topK, modelId, locale });
     ```
 
     </details>
@@ -547,7 +579,8 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
     {
       "message": "What does a cut cost?",
       "topK": 4,
-      "modelId": "openai:gpt-4.1-mini"
+      "modelId": "openai:gpt-4.1-mini",
+      "locale": "de"
     }
     ```
 
@@ -623,5 +656,8 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
 - ✅ 1. Deploy to cloud with proper scaling
   - Deployed on Vercel with env var configuration; deeper scaling/hardening still optional
 
-- [ ] 6. Add multi-language support
-  - _TODO:_ Add language detection, localized prompts, and translated response templates for core salon flows
+- ✅ 6. Add multi-language support
+  - Implemented: `next-intl` for UI strings (`messages/*.json`), routing/middleware, and `LanguageSwitcher`; default locale **`de`** in `src/i18n.ts`.
+  - Implemented: `ChatPageClient` sends `locale` with each `POST /api/chat` (from `useLocale()`); Zod validates `locale`; `runSalonPipeline` passes `locale` into `generateGroundedAnswer` so the grounded system prompt requests replies in the correct language (`replyLanguageNameForLocale`).
+  - Implemented: RAG query rewriter outputs an **English-only** retrieval query (`src/lib/rag/queryRewrite.ts`) so the English markdown KB stays a single source; assistant still answers in the UI language.
+  - Not in scope: automatic language detection from free text, separate translated KBs, or export templates per language.

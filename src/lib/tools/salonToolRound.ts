@@ -56,7 +56,7 @@ export async function runSalonToolRound(
     new SystemMessage(
       [
         "You route an assistant for NK Studio: one stylist, Natallia Khatsei.",
-        "Online booking is not active yet; tools return illustrative data and should not imply a live public booking URL.",
+        "SumUp self-service booking is live; the canonical booking URL must come from retrieved context, not from tools. Tools return illustrative availability, example slots, and prices — never invent a booking URL.",
         "Call tools only when the user needs availability checks, price hints, or suggested time windows.",
         "If a general FAQ or small talk does not need structured salon data, respond with a brief text answer and do not call tools.",
         "Prefer at most one round of tool calls when possible.",
