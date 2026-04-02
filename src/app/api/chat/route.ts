@@ -21,6 +21,10 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 20;
 const requestLog = new Map<string, number[]>();
 
+/** User-visible copy for unexpected failures; never echo upstream env/DB/LLM errors. */
+const CLIENT_INTERNAL_ERROR =
+  "Something went wrong. Please try again.";
+
 /**
  * Removes client keys that have no timestamps in the current window.
  *
@@ -156,6 +160,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 200 },
     );
   } catch (error) {
+    console.error("[api/chat]", error);
     const errText =
       error instanceof Error ? error.message : "Unexpected chat request failure.";
 
@@ -166,7 +171,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         ok: false,
-        error: errText,
+        error: CLIENT_INTERNAL_ERROR,
       },
       { status: 500 },
     );
