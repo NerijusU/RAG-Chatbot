@@ -1,6 +1,7 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 
 import { createSalonChatModel } from "@/lib/llm/createSalonChatModel";
+import { normalizeLlmContent } from "@/lib/llm/normalizeLlmContent";
 import type { SupportedModelId } from "@/lib/llm/modelCatalog";
 import { extractTokenUsage, type TokenUsage } from "@/lib/llm/usage";
 
@@ -32,16 +33,7 @@ export async function rewriteQueryForRetrieval(
     new HumanMessage(userMessage),
   ]);
 
-  const raw =
-    typeof response.content === "string"
-      ? response.content
-      : Array.isArray(response.content)
-        ? response.content
-            .map((part) => (typeof part === "object" && part && "text" in part ? String(part.text) : ""))
-            .join("")
-        : String(response.content);
-
-  const trimmed = raw.trim();
+  const trimmed = normalizeLlmContent(response.content).trim();
   return {
     query: trimmed.length > 0 ? trimmed : userMessage,
     usage: extractTokenUsage(response),

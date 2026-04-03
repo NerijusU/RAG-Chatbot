@@ -23,6 +23,12 @@ This project's domain is a hair salon assistant that helps users with:
 
 The assistant covers service and pricing questions, booking guidance (online self-service via SumUp — canonical URL and intent in `data/hair-salon/about/booking-links.md`; hours/cancellation in `policies/booking-policy.md`), stylist info (Natallia Khatsei), and care / FAQ topics from ingested markdown under `data/hair-salon/`. The knowledge base text is English; the UI and assistant replies support **en / de / lt / ru** (see multi-language below).
 
+### Domain research (niche, alternatives, target user)
+
+- **Niche:** Independent, single-stylist hair studio (NK Studio, Leipzig) — personalised colour, cuts, and treatments with a small, consistent service catalogue rather than a multi-location chain. The bot’s job is to **ground** answers in that studio’s own policies, pricing file, and FAQs, not to give generic hairdressing advice unattached to this business.
+- **Alternatives clients might use instead:** Calling or messaging the stylist, reading static pages on the studio website, using a **booking-only** widget (e.g. embedded scheduler) without Q&A, or generic salon marketplaces / directories (Treatwell-style) where policies and prices may not match this studio. A **human-only** front desk scales poorly for a one-person business; a **non-RAG** FAQ bot drifts or omits nuance; this project combines retrieval + tools to stay aligned with ingested markdown and structured tool outputs.
+- **Primary target users:** Prospective clients comparing services or prices, people who need **hours, prep, or cancellation rules** before booking, existing clients asking follow-up care questions, and **multilingual** users (German, Lithuanian, Russian, English) who prefer chat over email — especially outside business hours when instant, grounded answers reduce back-and-forth.
+
 **Implemented tool calling (domain-relevant):**
 
 - `check_stylist_availability` — `src/lib/tools/checkStylistAvailability.ts`
@@ -44,7 +50,8 @@ The assistant covers service and pricing questions, booking guidance (online sel
 - Implemented: UI (`/` on `chat.nk-studio.org`), shell with model selector (`Sidebar` / `ChatComposer`), wired chat to `/api/chat`, citations, tool blocks, token usage + estimated cost per message and per session (`ChatView`).
 - Implemented: Supabase health (`GET /api/health/supabase`), RAG ingest (`POST /api/rag/ingest`), `pnpm ingest:local`.
 - Implemented: LangChain pipeline, query rewrite, three Zod tools, telemetry (including token totals on successful chat), OpenAI + optional Anthropic chat via `createSalonChatModel`.
-- Not implemented / stretch: multi-turn memory, moderation API, automated tests, persisted history + export (JSON/CSV/PDF).
+- Not implemented / stretch: multi-turn memory, moderation API, persisted history + export (JSON/CSV/PDF).
+- Automated tests: `pnpm test` (Vitest) — unit tests for chat request validation, LLM content normalization, usage helpers, and prompt formatting; integration test for `POST /api/chat` with mocked `runSalonPipeline` (no real model calls).
 
 ### Architecture: classic RAG + tool round (flowchart)
 
@@ -306,8 +313,15 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
 
     const chain = RunnableSequence.from([
       RunnableLambda.from(async (state) => {
-        const rewrite = await rewriteQueryForRetrieval(state.message, state.modelId);
-        return { ...state, retrievalQuery: rewrite.query, usage: rewrite.usage };
+        const rewrite = await rewriteQueryForRetrieval(
+          state.message,
+          state.modelId,
+        );
+        return {
+          ...state,
+          retrievalQuery: rewrite.query,
+          usage: rewrite.usage,
+        };
       }),
       RunnableLambda.from(async (state) => {
         const chunks = await retrieveRelevantChunks(
@@ -338,7 +352,10 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
           state.modelId,
           state.locale,
         );
-        const totalUsage = sumTokenUsage(state.usage ?? emptyUsage, grounded.usage);
+        const totalUsage = sumTokenUsage(
+          state.usage ?? emptyUsage,
+          grounded.usage,
+        );
         const citations = chunks.map((c) => ({
           source: c.source,
           similarity: c.similarity,
@@ -500,9 +517,6 @@ Source: `docs/assets/rag_chatbot_classic_flowchart.svg`
 ## Optional tasks
 
 ### Easy
-
-- [ ] 1. Add conversation history and export functionality
-  - _TODO:_ Persist session chat history locally. Add export options (JSON first, then CSV/PDF if time allows)
 
 - ✅ 3. Include source citations in responses
   - Implemented: citations from API rendered in `ChatView` (sources / similarity)

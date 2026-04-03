@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
-import { defaultLocale, locales } from "@/i18n";
 import { getRequiredEnv } from "@/lib/env";
-import {
-  DEFAULT_MODEL_ID,
-  SUPPORTED_MODEL_IDS,
-} from "@/lib/llm/modelCatalog";
 import { runSalonPipeline } from "@/lib/llm/salonPipeline";
 import { logChatTelemetry } from "@/lib/logging/chatTelemetry";
-
-const requestSchema = z.object({
-  message: z.string().trim().min(1).max(2000),
-  topK: z.number().int().min(1).max(8).default(4),
-  modelId: z.enum(SUPPORTED_MODEL_IDS).default(DEFAULT_MODEL_ID),
-  locale: z.enum(locales).default(defaultLocale),
-});
+import { chatRequestSchema } from "@/lib/validation/chatRequestSchema";
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 20;
@@ -104,7 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const body = await request.json().catch(() => ({}));
-    const parsedBody = requestSchema.safeParse(body);
+    const parsedBody = chatRequestSchema.safeParse(body);
 
     if (!parsedBody.success) {
       return NextResponse.json(
