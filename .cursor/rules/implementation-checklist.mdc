@@ -71,41 +71,26 @@ Use this checklist when implementing or reviewing the Sprint 2 chatbot. Tick ite
 
 ### Easy
 
-- [ ] Conversation history + export
-- [ ] RAG process visualization
-- [ ] Interactive help/chatbot guide
+- [x] Include source citations in responses — API returns citations; `ChatView` renders them
 
 ### Medium
 
-- [x] Multi-model support (OpenAI, Anthropic, etc.) — `modelCatalog.ts`, validated `modelId` in `POST /api/chat`, selectors in `Sidebar` (desktop) + `ChatComposer` (mobile), `createSalonChatModel`
-- [ ] Real-time knowledge-base updates
-- [ ] Advanced caching strategy
-- [ ] Authentication + personalization
-- [x] Token usage and cost display — aggregated in `salonPipeline.ts` / `usage.ts`; per-message + session in `ChatView`; README optional section notes sprint vs. single-model product stance
-- [ ] Tool-call result visualization improvements (beyond current blocks)
-- [ ] Conversation export in PDF/CSV/JSON
-- [ ] Connect to public remote MCP tools
+- [x] Multi-model support (OpenAI, Anthropic, etc.) — selector in `ChatComposer` (mobile) and `Sidebar` (desktop), validated `modelId` in `POST /api/chat`, provider-aware model creation in `createSalonChatModel`; sprint-only feature, real salon product would usually use one model
+- [x] Token usage and cost display — usage metadata aggregated across rewrite + tool round + final answer; rendered per-message and per-session in `ChatView`
 
 ### Hard
 
-- [x] Cloud deployment with scaling considerations (beyond single Vercel + Supabase project) — live on Vercel + env vars; deeper scaling/hardening still optional (per README optional Hard)
-- [ ] Advanced indexing (e.g. RAPTOR, ColBERT)
-- [ ] A/B testing for RAG strategies
-- [ ] Automated knowledge-base updates
-- [ ] Model fine-tuning for domain
-- [x] Multi-language support — UI strings + API `locale` + grounded reply language + English retrieval query (see README optional **Hard**, multi-language item)
-- [ ] Advanced analytics dashboard
-- [ ] Implement tools as MCP servers
-- [ ] RAG evaluation (RAGAs or equivalent)
+- [x] Cloud deployment with scaling considerations — deployed on Vercel with env var configuration; deeper scaling/hardening still optional
+- [x] Multi-language support — `next-intl` for UI strings and routing, `LanguageSwitcher`, `locale` sent in `POST /api/chat`, grounded replies requested in the active UI language, and English-only retrieval query so the English KB remains the single source
 
 ## Cross-project reviewer lessons (from Sprint 1)
 
 - [x] Prompt-injection defense (basic): delimited blocks + system rule in `chat.ts`
 - [x] OpenAI + Anthropic chat timeouts / limited retries — `openaiClient.ts`, `modelConfig.ts`, `createSalonChatModel.ts`
 - [ ] Prompt-iteration evidence documented (comparison notes in README or docs)
-- [ ] Unit tests added for validation and prompt/retrieval helpers
-- [ ] At least one API integration test added with mocked model client
-- [ ] Domain research expanded in README (niche, alternatives, target user) — domain described; can deepen
+- [x] Unit tests added for validation and prompt/retrieval helpers — `chatRequestSchema`, `normalizeLlmContent`, `usage`/`extractTokenUsage`, `formatToolResultsForPrompt` + `buildGroundedInput`/`buildGroundedInstructions` (`pnpm test`)
+- [x] At least one API integration test added with mocked model client — `src/app/api/chat/route.integration.test.ts` mocks `runSalonPipeline` (full RAG/LLM stack), asserts 200 + validation 400
+- [x] Domain research expanded in README (niche, alternatives, target user) — README **Domain research** under For reviewers
 - [x] Structured logging (lightweight) — JSON lines in `chatTelemetry` (latency, counts, token totals + `modelId` + `locale` on chat_ok; no message body; estimated USD not logged)
 - [ ] Conversation context management (sliding window / summarization across turns)
 

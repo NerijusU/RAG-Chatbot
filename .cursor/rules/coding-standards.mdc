@@ -58,3 +58,8 @@ alwaysApply: true
   3. Maintain consistency across the codebase
   4. Introduce no unnecessary changes
 - Correct any issues before presenting the final answer.
+
+## 7. FULL NEXT.JS BUILD
+
+- **Do not run `pnpm build`** (or `npm run build` / `yarn build`) when helping in this repo unless the **user explicitly asks** for a production build.
+- Prefer lighter verification instead (e.g. `pnpm lint`, `pnpm test`, TypeScript checks in the editor) unless the task is specifically about build failures or deployment.

@@ -2,6 +2,7 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 
 import { defaultLocale, replyLanguageNameForLocale, type Locale } from "@/i18n";
 import { createSalonChatModel } from "@/lib/llm/createSalonChatModel";
+import { normalizeLlmContent } from "@/lib/llm/normalizeLlmContent";
 import type { SupportedModelId } from "@/lib/llm/modelCatalog";
 import { extractTokenUsage, type TokenUsage } from "@/lib/llm/usage";
 import type { RetrievedChunk } from "@/lib/rag/retrieval";
@@ -12,7 +13,7 @@ import type { RetrievedChunk } from "@/lib/rag/retrieval";
  * @param locale - UI locale; the assistant must reply in this language.
  * @returns System instructions combined with basic prompt-injection guardrails.
  */
-function buildGroundedInstructions(locale: Locale): string {
+export function buildGroundedInstructions(locale: Locale): string {
   const replyLang = replyLanguageNameForLocale(locale);
   return [
     "You are the assistant for NK Studio, a single-stylist hair studio.",
@@ -35,7 +36,7 @@ function buildGroundedInstructions(locale: Locale): string {
  * @param toolContext - Optional newline-separated tool outputs for the model.
  * @returns A single human message body for the chat model.
  */
-function buildGroundedInput(
+export function buildGroundedInput(
   question: string,
   chunks: RetrievedChunk[],
   toolContext?: string,
@@ -106,22 +107,8 @@ export async function generateGroundedAnswer(
     new HumanMessage(buildGroundedInput(question, chunks, toolContext)),
   ]);
 
-  const content = response.content;
-  const text =
-    typeof content === "string"
-      ? content
-      : Array.isArray(content)
-        ? content
-            .map((part) =>
-              typeof part === "object" && part !== null && "text" in part
-                ? String((part as { text: string }).text)
-                : "",
-            )
-            .join("")
-        : String(content);
-
   return {
-    answer: text.trim(),
+    answer: normalizeLlmContent(response.content).trim(),
     usage: extractTokenUsage(response),
   };
 }
